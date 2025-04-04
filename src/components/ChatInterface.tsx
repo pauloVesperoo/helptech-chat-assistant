@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage, { TypingIndicator } from './ChatMessage';
 import ChatInput from './ChatInput';
@@ -6,6 +5,7 @@ import ChatHeader from './ChatHeader';
 import ServiceButtons from './ServiceButtons';
 import { createChatMessage, getGreetingMessage, processUserInput, ChatState } from '../utils/chatUtils';
 import { useToast } from '@/components/ui/use-toast';
+import { servicesList } from '../data/faqData';
 
 const ChatInterface: React.FC = () => {
   const [chatState, setChatState] = useState<ChatState>({
@@ -19,12 +19,10 @@ const ChatInterface: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatState.messages]);
 
-  // Initial greeting
   useEffect(() => {
     const timer = setTimeout(() => {
       setBotResponse(getGreetingMessage());
@@ -33,11 +31,9 @@ const ChatInterface: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Set bot response with typing indicator
   const setBotResponse = (text: string) => {
     setChatState(prev => ({ ...prev, isTyping: true }));
     
-    // Simulate typing delay based on message length
     const typingDelay = Math.min(1000, Math.max(700, text.length * 10));
     
     setTimeout(() => {
@@ -50,16 +46,13 @@ const ChatInterface: React.FC = () => {
   };
 
   const handleUserMessage = (text: string) => {
-    // Add user message
     setChatState(prev => ({
       ...prev,
       messages: [...prev.messages, createChatMessage(text, 'user')]
     }));
 
-    // Process user input
     const { responseText, newState, stateChanges } = processUserInput(text, chatState);
     
-    // Update state if needed
     if (stateChanges) {
       setChatState(prev => ({
         ...prev,
@@ -73,7 +66,6 @@ const ChatInterface: React.FC = () => {
       }));
     }
 
-    // Show success toast for completed appointments
     if (chatState.botState === 'appointment_details' && newState === 'main_menu') {
       toast({
         title: "Agendamento realizado",
@@ -82,7 +74,6 @@ const ChatInterface: React.FC = () => {
       });
     }
     
-    // Show toast for human agent
     if (newState === 'human_agent') {
       toast({
         title: "Transferindo atendimento",
@@ -91,38 +82,39 @@ const ChatInterface: React.FC = () => {
       });
     }
 
-    // Set bot response with delay
     setTimeout(() => {
       setBotResponse(responseText);
     }, 500);
   };
 
   const handleServiceButtonClick = (serviceId: string) => {
-    // Simulate user selecting a service
-    const { responseText, newState, stateChanges } = processUserInput(`serviço ${serviceId}`, chatState);
+    const selectedService = servicesList.find(service => service.id === serviceId);
     
-    // Add a simulated user message about the service
-    setChatState(prev => ({
-      ...prev,
-      messages: [...prev.messages, createChatMessage(`Gostaria de saber sobre o serviço de ${serviceId}`, 'user')]
-    }));
-    
-    // Update state
-    setChatState(prev => ({
-      ...prev,
-      botState: newState,
-      ...(stateChanges || {}),
-      isTyping: true
-    }));
-    
-    // Set bot response with delay
-    setTimeout(() => {
+    if (selectedService) {
+      const userMessage = `Gostaria de saber sobre o serviço de ${selectedService.name}`;
+      
       setChatState(prev => ({
         ...prev,
-        messages: [...prev.messages, createChatMessage(responseText, 'bot')],
-        isTyping: false
+        messages: [...prev.messages, createChatMessage(userMessage, 'user')]
       }));
-    }, 1000);
+      
+      const { responseText, newState, stateChanges } = processUserInput(`serviço ${serviceId}`, chatState);
+      
+      setChatState(prev => ({
+        ...prev,
+        botState: newState,
+        ...(stateChanges || {}),
+        isTyping: true
+      }));
+      
+      setTimeout(() => {
+        setChatState(prev => ({
+          ...prev,
+          messages: [...prev.messages, createChatMessage(responseText, 'bot')],
+          isTyping: false
+        }));
+      }, 1000);
+    }
   };
 
   return (
