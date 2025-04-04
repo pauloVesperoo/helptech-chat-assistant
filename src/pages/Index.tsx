@@ -8,6 +8,7 @@ const Index = () => {
       <header className="mb-6 text-center">
         <h1 className="text-3xl md:text-4xl font-bold text-helptech mb-2">HelpTech</h1>
         <p className="text-gray-600">Suporte Técnico Especializado para Computadores e Dispositivos Móveis</p>
+        <p className="text-xs text-blue-600 mt-1">Integrado com backend Python</p>
       </header>
       
       <div className="flex-1 w-full max-w-2xl mx-auto">

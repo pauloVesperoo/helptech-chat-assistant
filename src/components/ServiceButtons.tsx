@@ -2,7 +2,7 @@
 import React from 'react';
 import { servicesList } from '../data/faqData';
 import { Button } from './ui/button';
-import { Laptop, Shield, Network, Tool } from 'lucide-react';
+import { Laptop, Shield, Network, Wrench } from 'lucide-react';
 
 interface ServiceButtonsProps {
   onServiceClick: (serviceId: string) => void;
@@ -19,7 +19,7 @@ const ServiceButtons: React.FC<ServiceButtonsProps> = ({ onServiceClick }) => {
       case 'network':
         return <Network size={18} />;
       case 'hardware':
-        return <Tool size={18} />;
+        return <Wrench size={18} />;
       default:
         return null;
     }
