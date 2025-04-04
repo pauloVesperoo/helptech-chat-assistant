@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage, { TypingIndicator } from './ChatMessage';
 import ChatInput from './ChatInput';
 import ChatHeader from './ChatHeader';
+import ServiceButtons from './ServiceButtons';
 import { createChatMessage, getGreetingMessage, processUserInput, ChatState } from '../utils/chatUtils';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -96,6 +97,34 @@ const ChatInterface: React.FC = () => {
     }, 500);
   };
 
+  const handleServiceButtonClick = (serviceId: string) => {
+    // Simulate user selecting a service
+    const { responseText, newState, stateChanges } = processUserInput(`serviço ${serviceId}`, chatState);
+    
+    // Add a simulated user message about the service
+    setChatState(prev => ({
+      ...prev,
+      messages: [...prev.messages, createChatMessage(`Gostaria de saber sobre o serviço de ${serviceId}`, 'user')]
+    }));
+    
+    // Update state
+    setChatState(prev => ({
+      ...prev,
+      botState: newState,
+      ...(stateChanges || {}),
+      isTyping: true
+    }));
+    
+    // Set bot response with delay
+    setTimeout(() => {
+      setChatState(prev => ({
+        ...prev,
+        messages: [...prev.messages, createChatMessage(responseText, 'bot')],
+        isTyping: false
+      }));
+    }, 1000);
+  };
+
   return (
     <div className="flex flex-col h-full border rounded-lg shadow-lg overflow-hidden bg-white">
       <ChatHeader />
@@ -109,6 +138,10 @@ const ChatInterface: React.FC = () => {
         
         <div ref={messagesEndRef} />
       </div>
+      
+      {chatState.botState === 'greeting' || chatState.botState === 'main_menu' ? (
+        <ServiceButtons onServiceClick={handleServiceButtonClick} />
+      ) : null}
       
       <ChatInput 
         onSubmit={handleUserMessage} 
