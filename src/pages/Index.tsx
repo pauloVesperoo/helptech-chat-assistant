@@ -43,7 +43,7 @@ const Index = () => {
       {/* Main content with padding for fixed header */}
       <div className="pt-16">
         {/* Hero Section */}
-        <header className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16 md:py-24">
+        <header id="home" className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16 md:py-24">
           <div className="container mx-auto px-4 md:px-8">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="md:w-1/2 mb-8 md:mb-0">
