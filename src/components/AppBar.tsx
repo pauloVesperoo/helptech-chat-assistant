@@ -12,46 +12,29 @@ const AppBar = ({ onChatClick }: { onChatClick?: () => void }) => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const scrollToSection = (sectionId: string) => {
-    const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: 'smooth' });
-      setIsMenuOpen(false);
-    }
-  };
-
   return (
     <header className="bg-white shadow-sm fixed top-0 left-0 right-0 z-50">
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div 
-            onClick={() => scrollToSection('home')} 
-            className="flex items-center cursor-pointer"
-          >
+          <Link to="/" className="flex items-center cursor-pointer">
             <span className="text-xl font-bold text-blue-600">HelpTech</span>
-          </div>
+          </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <button
-              onClick={() => scrollToSection('home')}
-              className="text-gray-700 hover:text-blue-600 font-medium"
-            >
-              Início
-            </button>
-            <button
-              onClick={() => scrollToSection('servicos')}
-              className="text-gray-700 hover:text-blue-600 font-medium"
-            >
-              Serviços
-            </button>
-            <button
-              onClick={() => scrollToSection('contato')}
-              className="text-gray-700 hover:text-blue-600 font-medium"
-            >
-              Contato
-            </button>
+            <Link to="/services" className="text-gray-700 hover:text-blue-600 font-medium">
+              Soluções
+            </Link>
+            <Link to="/support" className="text-gray-700 hover:text-blue-600 font-medium">
+              Suporte
+            </Link>
+            <Link to="/about" className="text-gray-700 hover:text-blue-600 font-medium">
+              Sobre Nós
+            </Link>
+            <Link to="/blog" className="text-gray-700 hover:text-blue-600 font-medium">
+              Blog
+            </Link>
           </nav>
 
           {/* Contact and Chat Button */}
@@ -89,24 +72,34 @@ const AppBar = ({ onChatClick }: { onChatClick?: () => void }) => {
       )}>
         <div className="container mx-auto px-4">
           <nav className="flex flex-col space-y-4">
-            <button 
+            <Link 
+              to="/services" 
               className="text-gray-700 hover:text-blue-600 font-medium py-2 text-left"
-              onClick={() => scrollToSection('home')}
+              onClick={() => setIsMenuOpen(false)}
             >
-              Início
-            </button>
-            <button 
+              Soluções
+            </Link>
+            <Link 
+              to="/support" 
               className="text-gray-700 hover:text-blue-600 font-medium py-2 text-left"
-              onClick={() => scrollToSection('servicos')}
+              onClick={() => setIsMenuOpen(false)}
             >
-              Serviços
-            </button>
-            <button 
+              Suporte
+            </Link>
+            <Link 
+              to="/about" 
               className="text-gray-700 hover:text-blue-600 font-medium py-2 text-left"
-              onClick={() => scrollToSection('contato')}
+              onClick={() => setIsMenuOpen(false)}
             >
-              Contato
-            </button>
+              Sobre Nós
+            </Link>
+            <Link 
+              to="/blog" 
+              className="text-gray-700 hover:text-blue-600 font-medium py-2 text-left"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Blog
+            </Link>
             <div className="flex items-center gap-2 text-gray-700 py-2">
               <PhoneCall size={18} className="text-blue-600" />
               <span>(11) 5555-1234</span>
