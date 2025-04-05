@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { HelpCircle, MessageSquare, Phone, Mail, Clock, CheckCircle } from 'lucide-react';
@@ -203,7 +202,21 @@ const Support = () => {
 };
 
 // Support Option Component
-const SupportOption = ({ icon, title, description, buttonText, buttonLink = "#", buttonVariant = "default" }) => {
+const SupportOption = ({ 
+  icon, 
+  title, 
+  description, 
+  buttonText, 
+  buttonLink = "#", 
+  buttonVariant = "default" 
+}: { 
+  icon: React.ReactNode; 
+  title: string; 
+  description: string; 
+  buttonText: string; 
+  buttonLink?: string; 
+  buttonVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link"; 
+}) => {
   return (
     <div className="bg-white rounded-lg p-8 shadow-md transition-transform hover:transform hover:scale-105 flex flex-col h-full">
       <div className="text-blue-600 mb-4">{icon}</div>
