@@ -56,7 +56,7 @@ const Index = () => {
                   className="flex items-center gap-2 bg-white text-blue-700 hover:bg-gray-100"
                 >
                   <Bot size={20} />
-                  Iniciar Atendimento
+                  Falar com um Especialista
                 </Button>
               </div>
               <div className="md:w-1/2 flex justify-center">
@@ -102,7 +102,7 @@ const Index = () => {
                 className="flex items-center gap-2 mx-auto bg-blue-600 hover:bg-blue-700"
               >
                 <Bot size={18} />
-                Falar com Atendente Virtual
+                Falar com um Especialista
               </Button>
             </div>
           </div>
@@ -139,7 +139,7 @@ const Index = () => {
                   className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                 >
                   <Bot size={20} />
-                  Iniciar Chat Agora
+                  Falar com um Especialista
                 </Button>
               </div>
             </div>
