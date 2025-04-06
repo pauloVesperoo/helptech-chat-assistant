@@ -60,13 +60,11 @@ const ChatInterface: React.FC = () => {
   };
 
   const handleUserMessage = async (text: string) => {
-    // Adiciona a mensagem do usuário ao estado
     setChatState(prev => ({
       ...prev,
       messages: [...prev.messages, createChatMessage(text, 'user')]
     }));
 
-    // Indica que o bot está digitando
     setChatState(prev => ({ ...prev, isTyping: true }));
 
     try {
@@ -74,18 +72,15 @@ const ChatInterface: React.FC = () => {
       let newState = chatState.botState;
       let stateChanges = null;
 
-      // Se tiver API key e OpenAI estiver ativado, usa a API
       if (apiKey && useOpenAI) {
         responseText = await getOpenAIResponse(chatState, text, apiKey);
       } else {
-        // Caso contrário, usa o processamento local
         const result = processUserInput(text, chatState);
         responseText = result.responseText;
         newState = result.newState;
         stateChanges = result.stateChanges;
       }
 
-      // Atualiza o estado com as mudanças necessárias
       if (stateChanges) {
         setChatState(prev => ({
           ...prev,
@@ -101,7 +96,6 @@ const ChatInterface: React.FC = () => {
         }));
       }
 
-      // Se mudou para estado de agendamento concluído, mostra toast
       if (chatState.botState === 'appointment_details' && newState === 'main_menu') {
         toast({
           title: "Agendamento realizado",
@@ -110,7 +104,6 @@ const ChatInterface: React.FC = () => {
         });
       }
       
-      // Se transferiu para atendente humano, mostra toast
       if (newState === 'human_agent') {
         toast({
           title: "Transferindo atendimento",
@@ -119,7 +112,6 @@ const ChatInterface: React.FC = () => {
         });
       }
 
-      // Adiciona a resposta do bot com delay para simular digitação
       const typingDelay = Math.min(1000, Math.max(700, responseText.length * 10));
       setTimeout(() => {
         setChatState(prev => ({
@@ -132,14 +124,12 @@ const ChatInterface: React.FC = () => {
       console.error('Erro ao processar mensagem:', error);
       setChatState(prev => ({ ...prev, isTyping: false }));
       
-      // Notifica o usuário sobre o erro
       toast({
         title: "Erro de processamento",
         description: "Ocorreu um erro ao processar sua mensagem. Por favor, tente novamente.",
         variant: "destructive",
       });
       
-      // Adiciona mensagem de erro do bot
       setBotResponse("Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente ou entre em contato por telefone.");
     }
   };
@@ -156,7 +146,6 @@ const ChatInterface: React.FC = () => {
       }));
       
       if (apiKey && useOpenAI) {
-        // Se estiver usando OpenAI, processa com a API
         setChatState(prev => ({ ...prev, isTyping: true }));
         
         getOpenAIResponse(chatState, userMessage, apiKey)
@@ -175,7 +164,6 @@ const ChatInterface: React.FC = () => {
             setBotResponse("Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente.");
           });
       } else {
-        // Caso contrário, usa o processamento local
         const { responseText, newState, stateChanges } = processUserInput(`serviço ${serviceId}`, chatState);
         
         setChatState(prev => ({
@@ -232,21 +220,20 @@ const ChatInterface: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full border rounded-lg shadow-lg overflow-hidden bg-white">
-      <div className="relative">
-        <ChatHeader />
-        <div className="absolute right-4 top-2 flex gap-2 items-center">
-          <APIKeySetup apiKey={apiKey} onSaveKey={handleSaveApiKey} />
-          {apiKey && (
-            <Button 
-              variant={useOpenAI ? "default" : "outline"} 
-              size="sm" 
-              className="text-xs"
-              onClick={toggleOpenAI}
-            >
-              {useOpenAI ? "Usando ChatGPT" : "Usando Local"}
-            </Button>
-          )}
-        </div>
+      <ChatHeader />
+      
+      <div className="bg-gray-50 py-2 px-4 flex justify-end items-center gap-2 border-b">
+        <APIKeySetup apiKey={apiKey} onSaveKey={handleSaveApiKey} />
+        {apiKey && (
+          <Button 
+            variant={useOpenAI ? "default" : "outline"} 
+            size="sm" 
+            className="text-xs"
+            onClick={toggleOpenAI}
+          >
+            {useOpenAI ? "Usando ChatGPT" : "Usando Local"}
+          </Button>
+        )}
       </div>
       
       <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
