@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage, { TypingIndicator } from './ChatMessage';
 import ChatInput from './ChatInput';
@@ -9,6 +8,7 @@ import { getOpenAIResponse } from '../utils/openaiService';
 import { useToast } from '@/components/ui/use-toast';
 import { servicesList } from '../data/faqData';
 import APIKeySetup from './APIKeySetup';
+import { Button } from '@/components/ui/button';
 
 const ChatInterface: React.FC = () => {
   const [chatState, setChatState] = useState<ChatState>({
