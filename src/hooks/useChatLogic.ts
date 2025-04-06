@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { createChatMessage, getGreetingMessage, processUserInput, ChatState } from '../utils/chatUtils';
@@ -46,6 +45,27 @@ export const useChatLogic = () => {
         isTyping: false
       }));
     }, typingDelay);
+  };
+
+  const clearChatHistory = () => {
+    setChatState({
+      messages: [],
+      botState: 'greeting',
+      contact: null,
+      appointment: null,
+      isTyping: false
+    });
+    
+    // After clearing, show greeting message again
+    setTimeout(() => {
+      setBotResponse(getGreetingMessage());
+    }, 500);
+    
+    toast({
+      title: "Histórico limpo",
+      description: "O histórico de conversa foi limpo com sucesso.",
+      variant: "default",
+    });
   };
 
   const handleUserMessage = async (text: string) => {
@@ -214,7 +234,8 @@ export const useChatLogic = () => {
     handleUserMessage,
     handleServiceButtonClick,
     handleSaveApiKey,
-    toggleOpenAI
+    toggleOpenAI,
+    clearChatHistory
   };
 };
 

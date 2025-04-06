@@ -15,7 +15,8 @@ const ChatInterface: React.FC = () => {
     handleUserMessage,
     handleServiceButtonClick,
     handleSaveApiKey,
-    toggleOpenAI
+    toggleOpenAI,
+    clearChatHistory
   } = useChatLogic();
 
   return (
@@ -29,7 +30,10 @@ const ChatInterface: React.FC = () => {
         onToggleOpenAI={toggleOpenAI}
       />
       
-      <MessageList chatState={chatState} />
+      <MessageList 
+        chatState={chatState} 
+        onClearChat={clearChatHistory}
+      />
       
       <ServiceSelector 
         botState={chatState.botState}
