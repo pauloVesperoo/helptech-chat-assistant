@@ -12,9 +12,6 @@ const ChatHeader: React.FC = () => {
           <p className="text-xs opacity-80">Suporte Técnico Especializado</p>
         </div>
       </div>
-      <div className="ml-auto text-xs bg-blue-800 px-2 py-1 rounded">
-        Powered by Python
-      </div>
     </div>
   );
 };
