@@ -18,9 +18,19 @@ const MessageList: React.FC<MessageListProps> = ({ chatState, onClearChat }) => 
   }, [chatState.messages]);
 
   return (
-    <div className="flex-1 p-4 overflow-y-auto bg-gray-50 relative">
+    <div className="flex-1 p-4 overflow-y-auto bg-gray-50 relative flex flex-col">
+      <div className="flex-1">
+        {chatState.messages.map(message => (
+          <ChatMessage key={message.id} message={message} />
+        ))}
+        
+        {chatState.isTyping && <TypingIndicator />}
+        
+        <div ref={messagesEndRef} />
+      </div>
+      
       {chatState.messages.length > 1 && onClearChat && (
-        <div className="absolute top-2 right-2 z-10">
+        <div className="mt-4 flex justify-center">
           <Button 
             variant="outline" 
             size="sm" 
@@ -33,14 +43,6 @@ const MessageList: React.FC<MessageListProps> = ({ chatState, onClearChat }) => 
           </Button>
         </div>
       )}
-      
-      {chatState.messages.map(message => (
-        <ChatMessage key={message.id} message={message} />
-      ))}
-      
-      {chatState.isTyping && <TypingIndicator />}
-      
-      <div ref={messagesEndRef} />
     </div>
   );
 };
