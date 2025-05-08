@@ -80,9 +80,18 @@ const Home = () => {
           .eq('section', 'services')
           .single();
         
-        if (heroData) setHeroContent(heroData.content);
-        if (aboutData) setAboutContent(aboutData.content);
-        if (servicesData) setServicesContent(servicesData.content);
+        // Correctly type cast the JSON data before setting state
+        if (heroData && typeof heroData.content === 'object') {
+          setHeroContent(heroData.content as HeroContent);
+        }
+        
+        if (aboutData && typeof aboutData.content === 'object') {
+          setAboutContent(aboutData.content as AboutContent);
+        }
+        
+        if (servicesData && typeof servicesData.content === 'object') {
+          setServicesContent(servicesData.content as ServicesContent);
+        }
       } catch (error) {
         console.error('Erro ao carregar configurações do site:', error);
       }
