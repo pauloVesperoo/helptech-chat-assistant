@@ -1,5 +1,4 @@
 
-
 export interface Profile {
   id: string;
   email: string;
@@ -29,4 +28,3 @@ export interface SiteSettings {
   updated_at: string;
   updated_by: string | null;
 }
-

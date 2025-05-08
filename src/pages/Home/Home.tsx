@@ -80,17 +80,41 @@ const Home = () => {
           .eq('section', 'services')
           .single();
         
-        // Correctly type cast the JSON data before setting state
-        if (heroData && typeof heroData.content === 'object') {
-          setHeroContent(heroData.content as HeroContent);
+        // Use proper type checking and casting
+        if (heroData && typeof heroData.content === 'object' && !Array.isArray(heroData.content)) {
+          const content = heroData.content as Record<string, any>;
+          if ('title' in content && 'subtitle' in content && 'buttonText' in content) {
+            setHeroContent({
+              title: content.title as string,
+              subtitle: content.subtitle as string,
+              buttonText: content.buttonText as string
+            });
+          }
         }
         
-        if (aboutData && typeof aboutData.content === 'object') {
-          setAboutContent(aboutData.content as AboutContent);
+        if (aboutData && typeof aboutData.content === 'object' && !Array.isArray(aboutData.content)) {
+          const content = aboutData.content as Record<string, any>;
+          if ('title' in content && 'content' in content) {
+            setAboutContent({
+              title: content.title as string,
+              content: content.content as string
+            });
+          }
         }
         
-        if (servicesData && typeof servicesData.content === 'object') {
-          setServicesContent(servicesData.content as ServicesContent);
+        if (servicesData && typeof servicesData.content === 'object' && !Array.isArray(servicesData.content)) {
+          const content = servicesData.content as Record<string, any>;
+          if ('title' in content && 'services' in content && Array.isArray(content.services)) {
+            setServicesContent({
+              title: content.title as string,
+              services: content.services.map((service: any) => ({
+                name: service.name as string,
+                description: service.description as string,
+                icon: service.icon as string,
+                price: service.price as string
+              }))
+            });
+          }
         }
       } catch (error) {
         console.error('Erro ao carregar configurações do site:', error);
