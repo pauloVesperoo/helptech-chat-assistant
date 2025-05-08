@@ -1,13 +1,13 @@
 
 import { ChatState } from './chatUtils';
 
-// Interface para representar a mensagem no formato esperado pela OpenAI
+// Interface to represent the expected format for OpenAI messages
 export interface OpenAIMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
 }
 
-// Função para enviar mensagens para a API do ChatGPT
+// Function to send messages to the ChatGPT API
 export const sendMessageToOpenAI = async (
   messages: OpenAIMessage[],
   apiKey: string
@@ -20,7 +20,7 @@ export const sendMessageToOpenAI = async (
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o',  // Você pode usar outros modelos: gpt-3.5-turbo, gpt-4o-mini
+        model: 'gpt-4o',  // Using the latest available model
         messages: messages,
         temperature: 0.7,
         max_tokens: 500,
@@ -40,9 +40,9 @@ export const sendMessageToOpenAI = async (
   }
 };
 
-// Função para preparar a conversa para envio à API
+// Function to prepare the conversation for sending to the API
 export const prepareConversationForOpenAI = (chatState: ChatState): OpenAIMessage[] => {
-  // Mensagem de sistema para dar contexto ao assistente
+  // System message to provide context to the assistant
   const systemMessage: OpenAIMessage = {
     role: 'system',
     content: `Você é um assistente virtual da HelpTech, uma empresa de suporte técnico especializado para computadores e dispositivos móveis.
@@ -55,36 +55,49 @@ Seus serviços incluem:
 
 Seu objetivo é ajudar os clientes, responder perguntas sobre os serviços e agendar atendimentos.
 Seja educado, profissional e objetivo nas respostas. Use linguagem amigável e acessível.
-Horário de atendimento: Segunda a sexta, das 8h às 18h.`,
+Horário de atendimento: Segunda a sexta, das 8h às 18h.
+
+Quando um usuário mencionar problemas técnicos, simule um técnico fazendo perguntas para diagnosticar o problema, como:
+1. Que tipo de dispositivo está apresentando o problema?
+2. Há quanto tempo o problema começou a ocorrer?
+3. Quais são os sintomas específicos?
+4. Já tentou alguma solução?
+
+Se o cliente mencionar "agendar", "marcar", "consulta", pergunte:
+- Nome completo
+- Email para contato
+- Tipo de serviço desejado
+- Data preferencial (DD/MM/AAAA)
+- Horário preferencial (HH:MM)`,
   };
 
-  // Converter o histórico de mensagens para o formato da OpenAI
+  // Convert message history to OpenAI format
   const conversationMessages: OpenAIMessage[] = chatState.messages.map((msg) => ({
     role: msg.type === 'user' ? 'user' : 'assistant',
     content: msg.text,
   }));
 
-  // Combinar a mensagem de sistema com o histórico de conversa
+  // Combine system message with conversation history
   return [systemMessage, ...conversationMessages];
 };
 
-// Função principal que orquestra a comunicação com a API
+// Main function that orchestrates communication with the API
 export const getOpenAIResponse = async (
   chatState: ChatState,
   userMessage: string,
   apiKey: string
 ): Promise<string> => {
   try {
-    // Prepara as mensagens para envio
+    // Prepare messages for sending
     const messages = prepareConversationForOpenAI(chatState);
     
-    // Adiciona a nova mensagem do usuário
+    // Add the new user message
     messages.push({
       role: 'user',
       content: userMessage,
     });
     
-    // Envia para a API e retorna a resposta
+    // Send to the API and return response
     return await sendMessageToOpenAI(messages, apiKey);
   } catch (error) {
     console.error('Erro ao obter resposta da OpenAI:', error);
