@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { createChatMessage, getGreetingMessage, ChatState } from '../utils/chatUtils';
-import { getOpenAIResponse, sendMessageToOpenAI } from '../utils/openaiService';
+import { getOpenAIResponse, OpenAIMessage, sendMessageToOpenAI } from '../utils/openaiService';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useChatLogic = () => {
@@ -226,7 +226,7 @@ export const useChatLogic = () => {
           
           const userPrompt = `Preciso agendar um serviço e forneci estas informações: ${JSON.stringify(appointmentDetails)}`;
           
-          const messages = [
+          const messages: OpenAIMessage[] = [
             { role: 'system', content: systemMessage },
             { role: 'user', content: userPrompt }
           ];
@@ -302,7 +302,7 @@ Seu objetivo principal é ajudar a diagnosticar problemas técnicos e oferecer s
 
 Use linguagem profissional, porém acessível. Horário de atendimento: Segunda a sexta, das 8h às 18h.`;
 
-        const messages = [
+        const messages: OpenAIMessage[] = [
           { role: 'system', content: systemPrompt },
         ];
         
