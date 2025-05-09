@@ -23,13 +23,38 @@ export const useChatLogic = () => {
   const { toast } = useToast();
   const { user, profile } = useAuth();
 
+  // Store conversation context in sessionStorage
   useEffect(() => {
+    const storedMessages = sessionStorage.getItem('chat_messages');
+    if (storedMessages) {
+      try {
+        const parsedMessages = JSON.parse(storedMessages);
+        if (Array.isArray(parsedMessages) && parsedMessages.length > 0) {
+          setChatState(prev => ({
+            ...prev,
+            messages: parsedMessages
+          }));
+          return; // Skip initial greeting if we have stored messages
+        }
+      } catch (e) {
+        console.error('Error parsing stored messages:', e);
+      }
+    }
+    
+    // Show initial greeting if no stored messages
     const timer = setTimeout(() => {
       setBotResponse(getGreetingMessage());
     }, 500);
     
     return () => clearTimeout(timer);
   }, []);
+  
+  // Save messages to sessionStorage when they change
+  useEffect(() => {
+    if (chatState.messages.length > 0) {
+      sessionStorage.setItem('chat_messages', JSON.stringify(chatState.messages));
+    }
+  }, [chatState.messages]);
   
   useEffect(() => {
     if (apiKey) {
@@ -74,6 +99,7 @@ export const useChatLogic = () => {
   };
 
   const clearChatHistory = () => {
+    sessionStorage.removeItem('chat_messages');
     setChatState({
       messages: [],
       botState: 'greeting',
@@ -230,6 +256,15 @@ export const useChatLogic = () => {
     return appointmentTriggers.some(trigger => lowerText.includes(trigger));
   };
 
+  const isDiagnosticRequest = (text: string) => {
+    const diagnosticTriggers = [
+      'problema', 'computador não', 'pc não', 'notebook não', 'celular não', 'não liga', 'não funciona', 'travando',
+      'lento', 'vírus', 'tela azul', 'erro', 'diagnosticar', 'ajuda com'
+    ];
+    const lowerText = text.toLowerCase();
+    return diagnosticTriggers.some(trigger => lowerText.includes(trigger));
+  };
+
   const handleUserMessage = async (text: string) => {
     const userMessage = createChatMessage(text, 'user');
     
@@ -248,8 +283,33 @@ export const useChatLogic = () => {
     try {
       let responseText: string;
       
+      // Check if user wants to talk to a real person
+      if (text.toLowerCase().includes('atendente') || text.toLowerCase().includes('humano') || text.toLowerCase().includes('pessoa real')) {
+        // Forward to real attendant
+        const conversation = chatState.messages.map(msg => `${msg.type === 'user' ? 'Cliente' : 'Bot'}: ${msg.text}`).join('\n');
+        
+        // Try to extract contact info from previous messages
+        const allUserMessages = chatState.messages.filter(msg => msg.type === 'user').map(msg => msg.text).join(' ');
+        const contactInfo = extractAppointmentDetails(allUserMessages);
+        
+        if (contactInfo.name && contactInfo.email) {
+          const forwarded = await forwardToRealAttendant(conversation, {
+            name: contactInfo.name,
+            email: contactInfo.email
+          });
+          
+          if (forwarded) {
+            responseText = "Entendi que você precisa falar com um de nossos técnicos. Suas informações foram encaminhadas e um atendente entrará em contato em breve. Enquanto isso, posso ajudar com mais alguma coisa?";
+          } else {
+            responseText = "Desculpe, ocorreu um erro ao encaminhar sua solicitação. Por favor, tente novamente mais tarde ou entre em contato diretamente pelo telefone.";
+          }
+        } else {
+          // Need to ask for contact info
+          responseText = "Para encaminhar seu atendimento a um técnico, preciso de algumas informações. Por favor, informe seu nome completo e email para contato.";
+        }
+      } 
       // Check if it's an appointment request
-      if (isAppointmentRequest(text.toLowerCase())) {
+      else if (isAppointmentRequest(text.toLowerCase())) {
         const appointmentDetails = extractAppointmentDetails(text);
         const missingFields = [];
         
@@ -301,32 +361,56 @@ Um de nossos técnicos entrará em contato para confirmar o agendamento. Posso a
             responseText = "Desculpe, ocorreu um erro ao registrar seu agendamento. Por favor, tente novamente mais tarde ou entre em contato por telefone.";
           }
         }
-      } else if (text.toLowerCase().includes('atendente') || text.toLowerCase().includes('humano') || text.toLowerCase().includes('pessoa real')) {
-        // Forward to real attendant
-        const conversation = chatState.messages.map(msg => `${msg.type === 'user' ? 'Cliente' : 'Bot'}: ${msg.text}`).join('\n');
+      }
+      // Check if it's a diagnostic request (HelpTech Edu)
+      else if (isDiagnosticRequest(text.toLowerCase())) {
+        // Create educational diagnostic prompt
+        const systemPrompt = `Você é um assistente técnico da HelpTech no modo Educativo. 
+Quando alguém relatar um problema como "meu PC não liga", conduza um diagnóstico perguntando 
+o que acontece, oferecendo possíveis soluções passo a passo. Ao final, pergunte se o problema 
+foi resolvido. Se não, ofereça ajuda para agendar um serviço ou falar com um atendente.
+
+Seja didático, explicando termos técnicos para leigos. Utilize uma estrutura de 3 etapas:
+1. Identifique o problema específico com perguntas diagnósticas
+2. Sugira possíveis causas
+3. Ofereça soluções passo a passo que o usuário possa tentar sozinho
         
-        // Try to extract contact info from previous messages
-        const allUserMessages = chatState.messages.filter(msg => msg.type === 'user').map(msg => msg.text).join(' ');
-        const contactInfo = extractAppointmentDetails(allUserMessages);
+Mantenha as respostas claras e em português.`;
         
-        if (contactInfo.name && contactInfo.email) {
-          const forwarded = await forwardToRealAttendant(conversation, {
-            name: contactInfo.name,
-            email: contactInfo.email
+        // Add conversation context from previous messages
+        const messages: OpenAIMessage[] = [
+          { role: 'system', content: systemPrompt },
+        ];
+        
+        // Include last 5 messages for context
+        const contextMessages = chatState.messages.slice(-5);
+        contextMessages.forEach(msg => {
+          messages.push({
+            role: msg.type === 'user' ? 'user' : 'assistant',
+            content: msg.text
           });
-          
-          if (forwarded) {
-            responseText = "Entendi que você precisa falar com um de nossos técnicos. Suas informações foram encaminhadas e um atendente entrará em contato em breve. Enquanto isso, posso ajudar com mais alguma coisa?";
-          } else {
-            responseText = "Desculpe, ocorreu um erro ao encaminhar sua solicitação. Por favor, tente novamente mais tarde ou entre em contato diretamente pelo telefone.";
+        });
+        
+        // Get response from OpenAI with diagnostic prompt
+        responseText = await sendMessageToOpenAI(messages, apiKey);
+        
+        // Save diagnostic problem to database
+        if (user) {
+          try {
+            await supabase.from('diagnostics').insert({
+              user_id: user.id,
+              problem_reported: text,
+              resolved: false,
+              solution_generated: responseText
+            });
+          } catch (error) {
+            console.error('Error saving diagnostic:', error);
           }
-        } else {
-          // Need to ask for contact info
-          responseText = "Para encaminhar seu atendimento a um técnico, preciso de algumas informações. Por favor, informe seu nome completo e email para contato.";
         }
-      } else {
+      }
+      else {
         // Default case - use OpenAI for response
-        // Create a system prompt for technical support and diagnostic
+        // Create a system prompt for technical support
         const systemPrompt = `Você é um assistente virtual da HelpTech, uma empresa de suporte técnico especializado para computadores e dispositivos móveis.
 
 Seus serviços incluem:
@@ -365,9 +449,10 @@ Use linguagem profissional, porém acessível. Horário de atendimento: Segunda 
       const typingDelay = Math.min(1000, Math.max(700, responseText.length * 10));
       
       setTimeout(() => {
+        const botMessage = createChatMessage(responseText, 'bot');
         setChatState(prev => ({
           ...prev,
-          messages: [...prev.messages, createChatMessage(responseText, 'bot')],
+          messages: [...prev.messages, botMessage],
           isTyping: false
         }));
 
