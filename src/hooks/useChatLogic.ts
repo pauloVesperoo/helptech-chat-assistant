@@ -2,8 +2,10 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { createChatMessage, getGreetingMessage, ChatState } from '../utils/chatUtils';
-import { getOpenAIResponse, OpenAIMessage, sendMessageToOpenAI } from '../utils/openaiService';
+import { OpenAIMessage, sendMessageToOpenAI } from '../utils/openaiService';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { servicesList } from '../data/faqData';
 
 export const useChatLogic = () => {
   const [chatState, setChatState] = useState<ChatState>({
@@ -14,12 +16,12 @@ export const useChatLogic = () => {
     isTyping: false
   });
   
-  const [useOpenAI, setUseOpenAI] = useState<boolean>(true);
   const [apiKey, setApiKey] = useState<string>(() => {
     return localStorage.getItem('openai_api_key') || '';
   });
   
   const { toast } = useToast();
+  const { user, profile } = useAuth();
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -41,12 +43,34 @@ export const useChatLogic = () => {
     const typingDelay = Math.min(1000, Math.max(700, text.length * 10));
     
     setTimeout(() => {
+      const botMessage = createChatMessage(text, 'bot');
+      
       setChatState(prev => ({
         ...prev,
-        messages: [...prev.messages, createChatMessage(text, 'bot')],
+        messages: [...prev.messages, botMessage],
         isTyping: false
       }));
+      
+      // Log bot message to database if user is authenticated
+      if (user) {
+        logChatMessage(botMessage.text, 'bot');
+      }
     }, typingDelay);
+  };
+
+  // Log chat message to database
+  const logChatMessage = async (text: string, type: 'user' | 'bot') => {
+    try {
+      if (!user) return;
+      
+      await supabase.from('chat_logs').insert({
+        user_id: user.id,
+        message_text: text,
+        message_type: type
+      });
+    } catch (error) {
+      console.error('Error logging chat message:', error);
+    }
   };
 
   const clearChatHistory = () => {
@@ -83,15 +107,24 @@ export const useChatLogic = () => {
       const { error } = await supabase
         .from('appointments')
         .insert({
-          user_id: null, // Will be updated with real user_id if logged in
+          user_id: user?.id || null,
           service_type: appointment.service,
           date: appointment.date,
           time: appointment.time,
-          details: `Cliente: ${appointment.name}, Email: ${appointment.email}${appointment.details ? ', Detalhes: ' + appointment.details : ''}`,
+          details: appointment.details || `Cliente: ${appointment.name}, Email: ${appointment.email}`,
           status: 'pending'
         });
       
       if (error) throw error;
+      
+      // Add diagnostic record if related to a technical problem
+      if (appointment.details && appointment.details.includes('problema')) {
+        await supabase.from('diagnostics').insert({
+          user_id: user?.id,
+          problem_reported: appointment.details,
+          resolved: false
+        });
+      }
       
       toast({
         title: "Agendamento realizado",
@@ -117,35 +150,36 @@ export const useChatLogic = () => {
     email: string;
   }) => {
     try {
-      // Simple EmailJS implementation - would need to be replaced with your actual EmailJS credentials
-      const emailjsData = {
-        service_id: 'your_service_id',
-        template_id: 'your_template_id',
-        user_id: 'your_user_id',
-        template_params: {
-          to_email: 'suporte@helptech.com',
-          from_name: contactInfo.name,
-          from_email: contactInfo.email,
-          message: conversation,
-          subject: 'Atendimento HelpTech - Solicitação de Contato'
-        }
+      // Simple EmailJS implementation
+      const serviceId = 'default_service';
+      const templateId = 'template_default';
+      const userId = 'user_openai';
+      
+      const templateParams = {
+        to_email: 'suporte@helptech.com',
+        from_name: contactInfo.name,
+        from_email: contactInfo.email,
+        message: conversation,
+        subject: 'Atendimento HelpTech - Solicitação de Contato'
       };
       
-      // Uncomment this to use EmailJS
-      /*
+      // Send email via EmailJS API
       const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(emailjsData)
+        body: JSON.stringify({
+          service_id: serviceId,
+          template_id: templateId,
+          user_id: userId,
+          template_params: templateParams
+        })
       });
       
-      if (!response.ok) throw new Error('Falha ao enviar email');
-      */
-      
-      // For demo purposes, just log it
-      console.log('Encaminhando para atendente:', emailjsData);
+      if (!response.ok) {
+        throw new Error('Falha ao enviar email');
+      }
       
       toast({
         title: "Solicitação enviada",
@@ -197,10 +231,17 @@ export const useChatLogic = () => {
   };
 
   const handleUserMessage = async (text: string) => {
+    const userMessage = createChatMessage(text, 'user');
+    
     setChatState(prev => ({
       ...prev,
-      messages: [...prev.messages, createChatMessage(text, 'user')]
+      messages: [...prev.messages, userMessage]
     }));
+
+    // Log user message to database if authenticated
+    if (user) {
+      logChatMessage(userMessage.text, 'user');
+    }
 
     setChatState(prev => ({ ...prev, isTyping: true }));
 
@@ -329,6 +370,11 @@ Use linguagem profissional, porém acessível. Horário de atendimento: Segunda 
           messages: [...prev.messages, createChatMessage(responseText, 'bot')],
           isTyping: false
         }));
+
+        // Log bot response if user is authenticated
+        if (user) {
+          logChatMessage(responseText, 'bot');
+        }
       }, typingDelay);
     } catch (error) {
       console.error('Erro ao processar mensagem:', error);
@@ -358,52 +404,12 @@ Use linguagem profissional, porém acessível. Horário de atendimento: Segunda 
       handleUserMessage(userMessage);
     }
   };
-  
-  const handleSaveApiKey = (key: string) => {
-    setApiKey(key);
-    if (key) {
-      setUseOpenAI(true);
-      toast({
-        title: "ChatGPT ativado",
-        description: "O chat agora está usando a API do ChatGPT para responder suas mensagens.",
-        variant: "default",
-      });
-    } else {
-      setUseOpenAI(false);
-    }
-  };
-
-  const toggleOpenAI = () => {
-    if (!apiKey) {
-      toast({
-        title: "Chave de API necessária",
-        description: "Configure sua chave de API do ChatGPT primeiro.",
-        variant: "default",
-      });
-      return;
-    }
-    
-    setUseOpenAI(!useOpenAI);
-    toast({
-      title: useOpenAI ? "Modo local ativado" : "ChatGPT ativado",
-      description: useOpenAI 
-        ? "O chat agora está usando respostas pré-programadas." 
-        : "O chat agora está usando a API do ChatGPT para respostas mais inteligentes.",
-      variant: "default",
-    });
-  };
 
   return {
     chatState,
     apiKey,
-    useOpenAI,
     handleUserMessage,
     handleServiceButtonClick,
-    handleSaveApiKey,
-    toggleOpenAI,
     clearChatHistory
   };
 };
-
-// Import for servicesList
-import { servicesList } from '../data/faqData';

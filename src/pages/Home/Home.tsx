@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
-import { ArrowRight, Bot, Laptop, Shield, Network, Wrench } from 'lucide-react';
+import { ArrowRight, Bot, Laptop, Shield, Network, Wrench, Users, Calendar, PhoneCall } from 'lucide-react';
 
 interface HeroContent {
   title: string;
@@ -173,6 +173,32 @@ const Home = () => {
           <h2 className="text-3xl font-bold text-center mb-12">{aboutContent.title}</h2>
           <div className="max-w-3xl mx-auto text-lg text-center leading-relaxed">
             <p>{aboutContent.content}</p>
+          </div>
+          
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-gray-50 rounded-lg p-6 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
+                <Users size={28} />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Equipe Especializada</h3>
+              <p className="text-gray-600">Técnicos altamente qualificados para resolver qualquer problema.</p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-6 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
+                <Calendar size={28} />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Atendimento Rápido</h3>
+              <p className="text-gray-600">Agendamentos realizados em até 24 horas após o contato.</p>
+            </div>
+            
+            <div className="bg-gray-50 rounded-lg p-6 text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
+                <PhoneCall size={28} />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Suporte Remoto</h3>
+              <p className="text-gray-600">Assistência remota para problemas simples e diagnósticos iniciais.</p>
+            </div>
           </div>
         </div>
       </section>
