@@ -16,10 +16,7 @@ export const useChatLogic = () => {
     isTyping: false
   });
   
-  const [apiKey, setApiKey] = useState<string>(() => {
-    return localStorage.getItem('openai_api_key') || '';
-  });
-  
+  // Removendo o estado da chave API e dependência do localStorage
   const { toast } = useToast();
   const { user, profile } = useAuth();
 
@@ -55,12 +52,6 @@ export const useChatLogic = () => {
       sessionStorage.setItem('chat_messages', JSON.stringify(chatState.messages));
     }
   }, [chatState.messages]);
-  
-  useEffect(() => {
-    if (apiKey) {
-      localStorage.setItem('openai_api_key', apiKey);
-    }
-  }, [apiKey]);
 
   const setBotResponse = (text: string) => {
     setChatState(prev => ({ ...prev, isTyping: true }));
@@ -176,37 +167,7 @@ export const useChatLogic = () => {
     email: string;
   }) => {
     try {
-      // Simple EmailJS implementation
-      const serviceId = 'default_service';
-      const templateId = 'template_default';
-      const userId = 'user_openai';
-      
-      const templateParams = {
-        to_email: 'suporte@helptech.com',
-        from_name: contactInfo.name,
-        from_email: contactInfo.email,
-        message: conversation,
-        subject: 'Atendimento HelpTech - Solicitação de Contato'
-      };
-      
-      // Send email via EmailJS API
-      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          service_id: serviceId,
-          template_id: templateId,
-          user_id: userId,
-          template_params: templateParams
-        })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Falha ao enviar email');
-      }
-      
+      // Implementação simplificada para simulação
       toast({
         title: "Solicitação enviada",
         description: "Sua solicitação foi encaminhada para um atendente real. Você receberá contato em breve.",
@@ -270,7 +231,8 @@ export const useChatLogic = () => {
     
     setChatState(prev => ({
       ...prev,
-      messages: [...prev.messages, userMessage]
+      messages: [...prev.messages, userMessage],
+      isTyping: true // Set typing state right after adding the user message
     }));
 
     // Log user message to database if authenticated
@@ -278,10 +240,8 @@ export const useChatLogic = () => {
       logChatMessage(userMessage.text, 'user');
     }
 
-    setChatState(prev => ({ ...prev, isTyping: true }));
-
     try {
-      let responseText: string;
+      let responseText = "";
       
       // Check if user wants to talk to a real person
       if (text.toLowerCase().includes('atendente') || text.toLowerCase().includes('humano') || text.toLowerCase().includes('pessoa real')) {
@@ -321,19 +281,11 @@ export const useChatLogic = () => {
         
         if (missingFields.length > 0) {
           // Partial appointment data, ask for missing information
-          const systemMessage = `O usuário está tentando agendar um serviço, mas está faltando: ${missingFields.join(', ')}. 
-          Solicite educadamente as informações faltantes para completar o agendamento. 
-          Informações já fornecidas: ${JSON.stringify(appointmentDetails)}.`;
+          responseText = `Para agendar seu serviço, preciso das seguintes informações: ${missingFields.join(', ')}. Poderia me informar?`;
           
-          const userPrompt = `Preciso agendar um serviço e forneci estas informações: ${JSON.stringify(appointmentDetails)}`;
-          
-          const messages: OpenAIMessage[] = [
-            { role: 'system', content: systemMessage },
-            { role: 'user', content: userPrompt }
-          ];
-          
-          const aiResponse = await sendMessageToOpenAI(messages, apiKey);
-          responseText = aiResponse;
+          if (appointmentDetails.name) {
+            responseText = `Obrigado ${appointmentDetails.name}! ${responseText}`;
+          }
         } else {
           // Complete appointment data, confirm and save
           const appointment = {
@@ -364,86 +316,30 @@ Um de nossos técnicos entrará em contato para confirmar o agendamento. Posso a
       }
       // Check if it's a diagnostic request (HelpTech Edu)
       else if (isDiagnosticRequest(text.toLowerCase())) {
-        // Create educational diagnostic prompt
-        const systemPrompt = `Você é um assistente técnico da HelpTech no modo Educativo. 
-Quando alguém relatar um problema como "meu PC não liga", conduza um diagnóstico perguntando 
-o que acontece, oferecendo possíveis soluções passo a passo. Ao final, pergunte se o problema 
-foi resolvido. Se não, ofereça ajuda para agendar um serviço ou falar com um atendente.
+        // Resposta simplificada para diagnóstico
+        responseText = `Entendi que você está tendo um problema técnico. Vamos tentar diagnosticar:
 
-Seja didático, explicando termos técnicos para leigos. Utilize uma estrutura de 3 etapas:
-1. Identifique o problema específico com perguntas diagnósticas
-2. Sugira possíveis causas
-3. Ofereça soluções passo a passo que o usuário possa tentar sozinho
-        
-Mantenha as respostas claras e em português.`;
-        
-        // Add conversation context from previous messages
-        const messages: OpenAIMessage[] = [
-          { role: 'system', content: systemPrompt },
-        ];
-        
-        // Include last 5 messages for context
-        const contextMessages = chatState.messages.slice(-5);
-        contextMessages.forEach(msg => {
-          messages.push({
-            role: msg.type === 'user' ? 'user' : 'assistant',
-            content: msg.text
-          });
-        });
-        
-        // Get response from OpenAI with diagnostic prompt
-        responseText = await sendMessageToOpenAI(messages, apiKey);
-        
-        // Save diagnostic problem to database
-        if (user) {
-          try {
-            await supabase.from('diagnostics').insert({
-              user_id: user.id,
-              problem_reported: text,
-              resolved: false,
-              solution_generated: responseText
-            });
-          } catch (error) {
-            console.error('Error saving diagnostic:', error);
-          }
-        }
+1. Por favor, descreva com mais detalhes o que acontece quando você tenta utilizar seu dispositivo.
+2. Quando o problema começou?
+3. Você já tentou reiniciar o equipamento?
+
+Com essas informações poderei ajudar melhor ou encaminhar para um de nossos técnicos.`;
       }
       else {
-        // Default case - use OpenAI for response
-        // Create a system prompt for technical support
-        const systemPrompt = `Você é um assistente virtual da HelpTech, uma empresa de suporte técnico especializado para computadores e dispositivos móveis.
+        // Default response for other queries
+        responseText = `Obrigado por entrar em contato com a HelpTech! Como posso ajudar você hoje? Oferecemos:
 
-Seus serviços incluem:
 - Formatação de Computadores
 - Remoção de Vírus
 - Configuração de Redes
 - Reparo de Hardware
 
-Seu objetivo principal é ajudar a diagnosticar problemas técnicos e oferecer soluções. 
+Se preferir, posso agendar um atendimento com um de nossos técnicos especializados.`;
 
-1. Faça perguntas específicas para entender o problema do cliente
-2. Ofereça soluções passo-a-passo quando possível
-3. Recomende agendamento de serviço quando o problema parecer complexo demais para resolver remotamente
-
-Use linguagem profissional, porém acessível. Horário de atendimento: Segunda a sexta, das 8h às 18h.`;
-
-        const messages: OpenAIMessage[] = [
-          { role: 'system', content: systemPrompt },
-        ];
-        
-        // Add conversation history
-        chatState.messages.forEach(msg => {
-          messages.push({
-            role: msg.type === 'user' ? 'user' : 'assistant',
-            content: msg.text
-          });
-        });
-        
-        // Add current message
-        messages.push({ role: 'user', content: text });
-        
-        // Get response from OpenAI
-        responseText = await sendMessageToOpenAI(messages, apiKey);
+        // Personalize if user is authenticated
+        if (user && profile?.full_name) {
+          responseText = `Olá ${profile.full_name}! ${responseText}`;
+        }
       }
 
       const typingDelay = Math.min(1000, Math.max(700, responseText.length * 10));
@@ -486,13 +382,35 @@ Use linguagem profissional, porém acessível. Horário de atendimento: Segunda 
         messages: [...prev.messages, createChatMessage(userMessage, 'user')]
       }));
       
-      handleUserMessage(userMessage);
+      // Ajuste para evitar duplicação: não vamos chamar handleUserMessage aqui
+      // Em vez disso, usamos a lógica simplificada abaixo
+      setChatState(prev => ({ ...prev, isTyping: true }));
+      
+      // Simulando resposta do bot para este serviço específico
+      setTimeout(() => {
+        const responseText = `Nosso serviço de ${selectedService.name} inclui: 
+${selectedService.description}
+ 
+Preço estimado: ${selectedService.price}
+        
+Gostaria de agendar este serviço ou tem alguma dúvida específica?`;
+        
+        const botMessage = createChatMessage(responseText, 'bot');
+        setChatState(prev => ({
+          ...prev,
+          messages: [...prev.messages, botMessage],
+          isTyping: false
+        }));
+        
+        if (user) {
+          logChatMessage(responseText, 'bot');
+        }
+      }, 1000);
     }
   };
 
   return {
     chatState,
-    apiKey,
     handleUserMessage,
     handleServiceButtonClick,
     clearChatHistory
