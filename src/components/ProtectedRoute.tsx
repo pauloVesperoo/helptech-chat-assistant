@@ -1,9 +1,9 @@
-
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { ReactNode } from 'react';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children: ReactNode | ((user: any, profile: any) => ReactNode);
   requireAdmin?: boolean;
 }
 
@@ -29,6 +29,12 @@ const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRouteProps)
     return <Navigate to="/dashboard" replace />;
   }
 
+  // Check if children is a function and call it with user and profile
+  if (typeof children === 'function') {
+    return <>{children(user, profile)}</>;
+  }
+
+  // Otherwise, just render the children as normal
   return <>{children}</>;
 };
 
