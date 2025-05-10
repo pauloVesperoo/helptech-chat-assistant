@@ -6,24 +6,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ChatInterface from '@/components/ChatInterface';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatDate } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Loader2 } from 'lucide-react';
 
 const Dashboard = () => {
   const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState('chat');
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [appointmentsError, setAppointmentsError] = useState(null);
 
+  // Separate fetching of appointments into its own effect
   useEffect(() => {
     if (profile?.id) {
       fetchAppointments();
+    } else {
+      setLoading(false);
     }
   }, [profile]);
 
   const fetchAppointments = async () => {
     try {
       setLoading(true);
+      setAppointmentsError(null);
+      
       const { data, error } = await supabase
         .from('appointments')
         .select('*')
@@ -34,6 +40,7 @@ const Dashboard = () => {
       setAppointments(data || []);
     } catch (error) {
       console.error('Error fetching appointments:', error);
+      setAppointmentsError(error.message || 'Erro ao carregar agendamentos');
     } finally {
       setLoading(false);
     }
@@ -54,6 +61,14 @@ const Dashboard = () => {
     }
   };
 
+  // Safely handle tab change to prevent errors
+  const handleTabChange = (value) => {
+    // Only change tab if it's different from the current one
+    if (value !== activeTab) {
+      setActiveTab(value);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
@@ -63,7 +78,7 @@ const Dashboard = () => {
         <p className="text-gray-600 mb-8">Bem-vindo ao seu painel de controle</p>
         
         <div className="bg-white rounded-lg shadow-md p-6">
-          <Tabs defaultValue="chat" value={activeTab} onValueChange={setActiveTab}>
+          <Tabs value={activeTab} onValueChange={handleTabChange}>
             <TabsList className="mb-4">
               <TabsTrigger value="chat">Assistente Virtual</TabsTrigger>
               <TabsTrigger value="appointments">Meus Agendamentos</TabsTrigger>
@@ -76,7 +91,17 @@ const Dashboard = () => {
             <TabsContent value="appointments">
               {loading ? (
                 <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                  <Loader2 className="h-12 w-12 animate-spin text-blue-500" />
+                </div>
+              ) : appointmentsError ? (
+                <div className="text-center py-8">
+                  <p className="text-red-500">{appointmentsError}</p>
+                  <button 
+                    onClick={fetchAppointments}
+                    className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Tentar novamente
+                  </button>
                 </div>
               ) : appointments.length === 0 ? (
                 <div className="text-center py-8">
