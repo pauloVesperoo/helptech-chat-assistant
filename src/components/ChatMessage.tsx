@@ -7,17 +7,32 @@ interface ChatMessageProps {
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
-  const formattedTime = new Intl.DateTimeFormat('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(message.timestamp);
+  // Safe formatting of timestamp
+  const getFormattedTime = (timestamp: number | Date) => {
+    try {
+      if (!timestamp) return '';
+      
+      // Ensure we have a valid Date object
+      const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+      
+      return new Intl.DateTimeFormat('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit'
+      }).format(date);
+    } catch (error) {
+      console.error('Error formatting timestamp:', error);
+      return '';
+    }
+  };
+
+  const formattedTime = getFormattedTime(message.timestamp);
 
   return (
     <div className={`flex flex-col my-2 ${message.type === 'user' ? 'items-end' : 'items-start'}`}>
       <div className={message.type === 'user' ? 'chat-bubble-user' : 'chat-bubble-bot'}>
         <div className="whitespace-pre-line">{message.text}</div>
       </div>
-      <span className="text-xs text-gray-500 mt-1 mx-1">{formattedTime}</span>
+      {formattedTime && <span className="text-xs text-gray-500 mt-1 mx-1">{formattedTime}</span>}
     </div>
   );
 };

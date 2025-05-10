@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
+import { formatDate, formatTime } from '@/lib/utils';
 
 const Dashboard = () => {
   const { profile } = useAuth();
@@ -58,6 +59,18 @@ const Dashboard = () => {
         return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">Concluído</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  // Safely format a date string
+  const safeFormatDate = (dateStr) => {
+    if (!dateStr) return '';
+    
+    try {
+      return new Date(dateStr).toLocaleDateString();
+    } catch (error) {
+      console.error('Error formatting date:', error, dateStr);
+      return dateStr;
     }
   };
 
@@ -127,8 +140,8 @@ const Dashboard = () => {
                       {appointments.map((appointment) => (
                         <TableRow key={appointment.id}>
                           <TableCell className="font-medium">{appointment.service_type}</TableCell>
-                          <TableCell>{new Date(appointment.date).toLocaleDateString()}</TableCell>
-                          <TableCell>{appointment.time}</TableCell>
+                          <TableCell>{safeFormatDate(appointment.date)}</TableCell>
+                          <TableCell>{appointment.time || ''}</TableCell>
                           <TableCell className="max-w-xs truncate">{appointment.details}</TableCell>
                           <TableCell>{getStatusBadge(appointment.status)}</TableCell>
                         </TableRow>
