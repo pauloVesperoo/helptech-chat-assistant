@@ -6,12 +6,13 @@ export interface OpenAIMessage {
   content: string;
 }
 
-export const sendMessageToOpenAI = async (messages: OpenAIMessage[]): Promise<string> => {
+export const sendMessageToOpenAI = async (messages: OpenAIMessage[], apiKey?: string): Promise<string> => {
   try {
+    // If apiKey is provided, we would use it in a real implementation
+    // For now, we'll just simulate the response regardless of the API key
+    
     // Simulate OpenAI API response for demo purposes
     // In a real app, this would make an actual API call with a proper key
-    
-    // Here we're using a simulated response to avoid requiring an API key
     return simulateAIResponse(messages[messages.length - 1].content);
   } catch (error) {
     console.error('Error calling OpenAI API:', error);
