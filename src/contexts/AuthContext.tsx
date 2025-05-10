@@ -50,9 +50,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (userId === 'admin-id') {
         setProfile({
           id: userId,
+          email: 'admin@helptech.com',
           full_name: 'Administrador',
           role: 'admin',
-          created_at: new Date().toISOString()
+          avatar_url: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         } as Profile);
         return;
       }
@@ -60,9 +63,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Para usuários normais, vamos simular um perfil comum
       setProfile({
         id: userId,
+        email: user?.email || '',
         full_name: user?.user_metadata?.full_name || 'Usuário',
-        role: 'user',
-        created_at: new Date().toISOString()
+        role: 'client',
+        avatar_url: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       } as Profile);
       
       /* Comentado para evitar o erro de recursão infinita
@@ -130,18 +136,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // Hack para login como admin
       if (email === 'admin@helptech.com' && password === 'admin123') {
-        // Simulando um login de administrador
-        setUser({
-          id: 'admin-id', 
-          email: email,
-          user_metadata: { full_name: 'Administrador' }
-        } as User);
+        // Creating a simulated user and session that conforms to the User type
+        const mockedUser = {
+          id: 'admin-id',
+          email: 'admin@helptech.com',
+          user_metadata: { full_name: 'Administrador' },
+          app_metadata: {},
+          aud: 'authenticated',
+          created_at: new Date().toISOString(),
+        } as unknown as User;
+        
+        setUser(mockedUser);
         
         setProfile({
           id: 'admin-id',
+          email: 'admin@helptech.com',
           full_name: 'Administrador',
           role: 'admin',
-          created_at: new Date().toISOString()
+          avatar_url: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         } as Profile);
         
         setSession({} as Session);

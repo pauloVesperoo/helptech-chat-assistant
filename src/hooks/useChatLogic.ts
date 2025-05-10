@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { createChatMessage, getGreetingMessage, ChatState } from '../utils/chatUtils';
-import { OpenAIMessage, sendMessageToOpenAI } from '../utils/openaiService';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { servicesList } from '../data/faqData';
@@ -391,7 +390,7 @@ Se preferir, posso agendar um atendimento com um de nossos técnicos especializa
         const responseText = `Nosso serviço de ${selectedService.name} inclui: 
 ${selectedService.description}
  
-Preço estimado: ${selectedService.price}
+Preço estimado: ${selectedService.priceRange}
         
 Gostaria de agendar este serviço ou tem alguma dúvida específica?`;
         
