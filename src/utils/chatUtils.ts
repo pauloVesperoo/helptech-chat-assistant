@@ -1,4 +1,6 @@
 
+import { generateId } from '../utils/chatUtils';
+
 export interface ChatMessage {
   id: string;
   type: 'user' | 'bot';

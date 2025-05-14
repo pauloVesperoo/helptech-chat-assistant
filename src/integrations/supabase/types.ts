@@ -53,60 +53,6 @@ export type Database = {
           },
         ]
       }
-      chat_logs: {
-        Row: {
-          created_at: string | null
-          id: string
-          message_text: string
-          message_type: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          message_text: string
-          message_type: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          message_text?: string
-          message_type?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      diagnostics: {
-        Row: {
-          created_at: string | null
-          id: string
-          problem_reported: string
-          resolved: boolean | null
-          solution_generated: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          problem_reported: string
-          resolved?: boolean | null
-          solution_generated?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          problem_reported?: string
-          resolved?: boolean | null
-          solution_generated?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           avatar_url: string | null

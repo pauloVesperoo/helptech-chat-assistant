@@ -17,78 +17,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Função para limpar o estado da autenticação
-const cleanupAuthState = () => {
-  // Remover tokens padrão de autenticação
-  localStorage.removeItem('supabase.auth.token');
-  // Remover todas as chaves de autenticação do Supabase do localStorage
-  Object.keys(localStorage).forEach((key) => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-      localStorage.removeItem(key);
-    }
-  });
-  // Remover do sessionStorage se estiver em uso
-  Object.keys(sessionStorage || {}).forEach((key) => {
-    if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
-      sessionStorage.removeItem(key);
-    }
-  });
-};
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-
-  // Função para buscar o perfil do usuário
-  const fetchProfile = async (userId: string) => {
-    try {
-      // Simulação do perfil para evitar o erro de recursão infinita na política
-      // Em produção, este erro deve ser corrigido na política RLS do Supabase
-      if (userId === 'admin-id') {
-        setProfile({
-          id: userId,
-          email: 'admin@helptech.com',
-          full_name: 'Administrador',
-          role: 'admin',
-          avatar_url: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } as Profile);
-        return;
-      }
-      
-      // Para usuários normais, vamos simular um perfil comum
-      setProfile({
-        id: userId,
-        email: user?.email || '',
-        full_name: user?.user_metadata?.full_name || 'Usuário',
-        role: 'client',
-        avatar_url: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      } as Profile);
-      
-      /* Comentado para evitar o erro de recursão infinita
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile', error);
-        return;
-      }
-
-      setProfile(data as Profile);
-      */
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-    }
-  };
 
   useEffect(() => {
     // Set up auth state listener
@@ -122,53 +56,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
+  const fetchProfile = async (userId: string) => {
     try {
-      // Limpar estado de autenticação existente
-      cleanupAuthState();
-      
-      // Tentar logout global antes de fazer login
-      try {
-        await supabase.auth.signOut({ scope: 'global' });
-      } catch (err) {
-        // Continuar mesmo se falhar
-      }
-      
-      // Hack para login como admin
-      if (email === 'admin@helptech.com' && password === 'admin123') {
-        // Creating a simulated user and session that conforms to the User type
-        const mockedUser = {
-          id: 'admin-id',
-          email: 'admin@helptech.com',
-          user_metadata: { full_name: 'Administrador' },
-          app_metadata: {},
-          aud: 'authenticated',
-          created_at: new Date().toISOString(),
-        } as unknown as User;
-        
-        setUser(mockedUser);
-        
-        setProfile({
-          id: 'admin-id',
-          email: 'admin@helptech.com',
-          full_name: 'Administrador',
-          role: 'admin',
-          avatar_url: null,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } as Profile);
-        
-        setSession({} as Session);
-        
-        toast({
-          title: "Login bem-sucedido",
-          description: "Você está conectado como Administrador",
-        });
-        
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile', error);
         return;
       }
-      
-      // Login normal para outros usuários
+
+      setProfile(data as Profile);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -192,8 +100,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string, fullName: string) => {
     try {
-      cleanupAuthState();
-      
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -206,7 +112,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       toast({
         title: "Cadastro realizado",
-        description: "Faça login para continuar.",
+        description: "Verifique seu email para confirmar o cadastro.",
       });
     } catch (error: any) {
       toast({
@@ -220,25 +126,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     try {
-      // Limpar estado de autenticação
-      cleanupAuthState();
-      
-      // Para o usuário admin simulado
-      if (user?.id === 'admin-id') {
-        setUser(null);
-        setProfile(null);
-        setSession(null);
-        
-        toast({
-          title: "Desconectado",
-          description: "Você saiu do sistema com sucesso",
-        });
-        return;
-      }
-      
-      // Tentar logout global
-      await supabase.auth.signOut({ scope: 'global' });
-      
+      await supabase.auth.signOut();
       toast({
         title: "Desconectado",
         description: "Você saiu do sistema com sucesso",
