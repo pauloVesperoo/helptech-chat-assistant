@@ -4,31 +4,22 @@ import ChatHeader from './ChatHeader';
 import ChatInput from './ChatInput';
 import MessageList from './MessageList';
 import ServiceSelector from './ServiceSelector';
-import ChatControls from './ChatControls';
 import { useChatLogic } from '../hooks/useChatLogic';
+import { useAuth } from '@/contexts/AuthContext';
 
 const ChatInterface: React.FC = () => {
+  const { profile } = useAuth();
+  
   const {
     chatState,
-    apiKey,
-    useOpenAI,
     handleUserMessage,
     handleServiceButtonClick,
-    handleSaveApiKey,
-    toggleOpenAI,
     clearChatHistory
   } = useChatLogic();
 
   return (
     <div className="flex flex-col h-full border rounded-lg shadow-lg overflow-hidden bg-white">
-      <ChatHeader />
-      
-      <ChatControls 
-        apiKey={apiKey}
-        useOpenAI={useOpenAI}
-        onSaveApiKey={handleSaveApiKey}
-        onToggleOpenAI={toggleOpenAI}
-      />
+      <ChatHeader userName={profile?.full_name} />
       
       <MessageList 
         chatState={chatState} 
@@ -37,7 +28,7 @@ const ChatInterface: React.FC = () => {
       
       <ServiceSelector 
         botState={chatState.botState}
-        useOpenAI={useOpenAI}
+        useOpenAI={true} // Always use OpenAI now
         onServiceClick={handleServiceButtonClick}
       />
       
