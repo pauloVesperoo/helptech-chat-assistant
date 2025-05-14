@@ -4,7 +4,6 @@ import { useToast } from '@/components/ui/use-toast';
 import { createChatMessage, getGreetingMessage, ChatState } from '../utils/chatUtils';
 import { getOpenAIResponse, sendMessageToOpenAI, OpenAIMessage } from '../utils/openaiService';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 export const useChatLogic = () => {
   const [chatState, setChatState] = useState<ChatState>({
@@ -15,25 +14,26 @@ export const useChatLogic = () => {
     isTyping: false
   });
   
-  // Always use OpenAI now - this state is kept for compatibility
-  const [useOpenAI] = useState<boolean>(true);
-  const [apiKey] = useState<string>('using-backend-key');
+  const [useOpenAI, setUseOpenAI] = useState<boolean>(true);
+  const [apiKey, setApiKey] = useState<string>(() => {
+    return localStorage.getItem('openai_api_key') || '';
+  });
   
-  const { user, profile } = useAuth();
   const { toast } = useToast();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Personalize greeting if user is logged in
-      let greeting = getGreetingMessage();
-      if (profile?.full_name) {
-        greeting = greeting.replace('Bem-vindo à', `${profile.full_name}, bem-vindo à`);
-      }
-      setBotResponse(greeting);
+      setBotResponse(getGreetingMessage());
     }, 500);
     
     return () => clearTimeout(timer);
-  }, [profile]);
+  }, []);
+  
+  useEffect(() => {
+    if (apiKey) {
+      localStorage.setItem('openai_api_key', apiKey);
+    }
+  }, [apiKey]);
 
   const setBotResponse = (text: string) => {
     setChatState(prev => ({ ...prev, isTyping: true }));
@@ -60,12 +60,7 @@ export const useChatLogic = () => {
     
     // After clearing, show greeting message again
     setTimeout(() => {
-      // Personalize greeting if user is logged in
-      let greeting = getGreetingMessage();
-      if (profile?.full_name) {
-        greeting = greeting.replace('Bem-vindo à', `${profile.full_name}, bem-vindo à`);
-      }
-      setBotResponse(greeting);
+      setBotResponse(getGreetingMessage());
     }, 500);
     
     toast({
@@ -88,7 +83,7 @@ export const useChatLogic = () => {
       const { error } = await supabase
         .from('appointments')
         .insert({
-          user_id: user?.id || null,
+          user_id: null, // Will be updated with real user_id if logged in
           service_type: appointment.service,
           date: appointment.date,
           time: appointment.time,
@@ -184,13 +179,9 @@ export const useChatLogic = () => {
     const dateMatch = text.match(dateRegex);
     const timeMatch = text.match(timeRegex);
     
-    // Use user profile data if available and not extracted from text
-    const userName = nameMatch?.[1]?.trim() || profile?.full_name || '';
-    const userEmail = emailMatch?.[1]?.trim() || user?.email || '';
-    
     return {
-      name: userName,
-      email: userEmail,
+      name: nameMatch?.[1]?.trim(),
+      email: emailMatch?.[1]?.trim(),
       service: serviceMatch?.[1]?.trim(),
       date: dateMatch?.[1]?.trim(),
       time: timeMatch?.[1]?.trim(),
@@ -368,12 +359,48 @@ Use linguagem profissional, porém acessível. Horário de atendimento: Segunda 
     }
   };
   
+  const handleSaveApiKey = (key: string) => {
+    setApiKey(key);
+    if (key) {
+      setUseOpenAI(true);
+      toast({
+        title: "ChatGPT ativado",
+        description: "O chat agora está usando a API do ChatGPT para responder suas mensagens.",
+        variant: "default",
+      });
+    } else {
+      setUseOpenAI(false);
+    }
+  };
+
+  const toggleOpenAI = () => {
+    if (!apiKey) {
+      toast({
+        title: "Chave de API necessária",
+        description: "Configure sua chave de API do ChatGPT primeiro.",
+        variant: "default",
+      });
+      return;
+    }
+    
+    setUseOpenAI(!useOpenAI);
+    toast({
+      title: useOpenAI ? "Modo local ativado" : "ChatGPT ativado",
+      description: useOpenAI 
+        ? "O chat agora está usando respostas pré-programadas." 
+        : "O chat agora está usando a API do ChatGPT para respostas mais inteligentes.",
+      variant: "default",
+    });
+  };
+
   return {
     chatState,
     apiKey,
     useOpenAI,
     handleUserMessage,
     handleServiceButtonClick,
+    handleSaveApiKey,
+    toggleOpenAI,
     clearChatHistory
   };
 };

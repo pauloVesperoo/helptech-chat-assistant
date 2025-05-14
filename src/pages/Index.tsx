@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Bot, Laptop, Shield, Wrench, PhoneCall, Star, CheckCircle, Clock } from 'lucide-react';
+import { ArrowRight, Bot, Laptop, Shield, Wrench, PhoneCall } from 'lucide-react';
 import ChatInterface from '@/components/ChatInterface';
 import { Link } from 'react-router-dom';
 import AppBar from '@/components/AppBar';
@@ -70,30 +70,6 @@ const Index = () => {
           </div>
         </header>
 
-        {/* Stats Section */}
-        <section className="py-12 bg-white">
-          <div className="container mx-auto px-4 md:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-              <div className="p-4">
-                <div className="text-blue-600 text-4xl font-bold mb-2">98%</div>
-                <p className="text-gray-600">Taxa de Satisfação</p>
-              </div>
-              <div className="p-4">
-                <div className="text-blue-600 text-4xl font-bold mb-2">+5000</div>
-                <p className="text-gray-600">Clientes Atendidos</p>
-              </div>
-              <div className="p-4">
-                <div className="text-blue-600 text-4xl font-bold mb-2">1h</div>
-                <p className="text-gray-600">Tempo Médio de Resposta</p>
-              </div>
-              <div className="p-4">
-                <div className="text-blue-600 text-4xl font-bold mb-2">24/7</div>
-                <p className="text-gray-600">Suporte Online</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Services Section */}
         <section id="servicos" className="py-16 bg-gray-50">
           <div className="container mx-auto px-4 md:px-8">
@@ -128,60 +104,6 @@ const Index = () => {
                 <Bot size={18} />
                 Falar com um Especialista
               </Button>
-            </div>
-          </div>
-        </section>
-
-        {/* Testimonials Section */}
-        <section className="py-16 bg-white">
-          <div className="container mx-auto px-4 md:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">O Que Nossos Clientes Dizem</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <TestimonialCard 
-                name="Carlos Silva"
-                role="Empresário"
-                testimonial="O suporte da HelpTech salvou minha empresa quando todos os nossos computadores foram infectados. Atendimento rápido e eficiente!"
-                rating={5}
-              />
-              <TestimonialCard 
-                name="Ana Oliveira"
-                role="Designer"
-                testimonial="Meu MacBook parou de funcionar com trabalhos urgentes. A equipe recuperou todos os arquivos e consertou o problema no mesmo dia."
-                rating={5}
-              />
-              <TestimonialCard 
-                name="Roberto Santos"
-                role="Professor"
-                testimonial="Excelente serviço de configuração de redes. Agora consigo dar minhas aulas online sem problemas de conexão."
-                rating={4}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* How It Works Section */}
-        <section className="py-16 bg-gray-50">
-          <div className="container mx-auto px-4 md:px-8">
-            <h2 className="text-3xl font-bold text-center mb-12">Como Funciona</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <StepCard 
-                number="1"
-                title="Entre em Contato"
-                description="Use nosso assistente virtual para descrever seu problema ou agendar um serviço."
-                icon={<Bot size={30} />}
-              />
-              <StepCard 
-                number="2"
-                title="Diagnóstico"
-                description="Nossa equipe técnica avaliará seu problema e fornecerá uma solução personalizada."
-                icon={<CheckCircle size={30} />}
-              />
-              <StepCard 
-                number="3"
-                title="Atendimento"
-                description="Realizamos o serviço conforme agendado, seja remotamente ou presencialmente."
-                icon={<Clock size={30} />}
-              />
             </div>
           </div>
         </section>
@@ -249,38 +171,6 @@ const ServiceCard = ({ icon, title, description }) => {
   return (
     <div className="bg-white rounded-lg p-6 shadow-md transition-transform hover:transform hover:scale-105">
       <div className="text-blue-600 mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600">{description}</p>
-    </div>
-  );
-};
-
-// Testimonial Card Component
-const TestimonialCard = ({ name, role, testimonial, rating }) => {
-  return (
-    <div className="bg-white rounded-lg p-6 shadow-md border border-gray-100">
-      <div className="flex mb-2">
-        {[...Array(rating)].map((_, i) => (
-          <Star key={i} size={16} className="text-yellow-500 fill-current" />
-        ))}
-      </div>
-      <p className="text-gray-600 italic mb-4">"{testimonial}"</p>
-      <div className="font-semibold">{name}</div>
-      <div className="text-sm text-gray-500">{role}</div>
-    </div>
-  );
-};
-
-// Step Card Component
-const StepCard = ({ number, title, description, icon }) => {
-  return (
-    <div className="bg-white rounded-lg p-6 shadow-md text-center">
-      <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xl font-bold mx-auto mb-4">
-        {number}
-      </div>
-      <div className="text-blue-600 mx-auto mb-4 flex justify-center">
-        {icon}
-      </div>
       <h3 className="text-xl font-semibold mb-2">{title}</h3>
       <p className="text-gray-600">{description}</p>
     </div>
