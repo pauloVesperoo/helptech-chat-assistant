@@ -1,5 +1,6 @@
 
-import { generateId } from '../utils/chatUtils';
+// Remove the self-import that's causing the issue
+// import { generateId } from '../utils/chatUtils'; <- This line is removed
 
 export interface ChatMessage {
   id: string;
