@@ -5,7 +5,6 @@ import { createChatMessage, getGreetingMessage, ChatState } from '../utils/chatU
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { servicesList } from '../data/faqData';
-import { sendMessageToOpenAI } from '../utils/openaiService';
 
 export const useChatLogic = () => {
   const [chatState, setChatState] = useState<ChatState>({
@@ -16,7 +15,7 @@ export const useChatLogic = () => {
     isTyping: false
   });
   
-  // Removendo a dependência do localStorage
+  // Removendo o estado da chave API e dependência do localStorage
   const { toast } = useToast();
   const { user, profile } = useAuth();
 
@@ -38,17 +37,13 @@ export const useChatLogic = () => {
       }
     }
     
-    // Show personalized initial greeting if authenticated, otherwise standard greeting
+    // Show initial greeting if no stored messages
     const timer = setTimeout(() => {
-      const greeting = profile ? 
-        `Olá, ${profile.full_name || 'Cliente'}! ${getGreetingMessage()}` : 
-        getGreetingMessage();
-      
-      setBotResponse(greeting);
+      setBotResponse(getGreetingMessage());
     }, 500);
     
     return () => clearTimeout(timer);
-  }, [profile]);
+  }, []);
   
   // Save messages to sessionStorage when they change
   useEffect(() => {
@@ -105,11 +100,7 @@ export const useChatLogic = () => {
     
     // After clearing, show greeting message again
     setTimeout(() => {
-      const greeting = profile ? 
-        `Olá, ${profile.full_name || 'Cliente'}! ${getGreetingMessage()}` : 
-        getGreetingMessage();
-      
-      setBotResponse(greeting);
+      setBotResponse(getGreetingMessage());
     }, 500);
     
     toast({
@@ -119,7 +110,7 @@ export const useChatLogic = () => {
     });
   };
 
-  // Save appointment to database and send confirmation email
+  // Save appointment to database
   const saveAppointment = async (appointment: {
     name: string;
     email: string;
@@ -129,7 +120,6 @@ export const useChatLogic = () => {
     details?: string;
   }) => {
     try {
-      // Save to database
       const { error } = await supabase
         .from('appointments')
         .insert({
@@ -152,12 +142,9 @@ export const useChatLogic = () => {
         });
       }
       
-      // Send confirmation email
-      await sendConfirmationEmail(appointment);
-      
       toast({
         title: "Agendamento realizado",
-        description: "Seu agendamento foi registrado com sucesso! Um email de confirmação foi enviado.",
+        description: "Seu agendamento foi registrado com sucesso!",
         variant: "default",
       });
       
@@ -173,58 +160,13 @@ export const useChatLogic = () => {
     }
   };
 
-  // Send confirmation email
-  const sendConfirmationEmail = async (appointment: {
-    name: string;
-    email: string;
-    service: string;
-    date: string;
-    time: string;
-    details?: string;
-  }) => {
-    try {
-      // Usando a simulated email service (no real delivery) para demonstração
-      console.log(`Email de confirmação enviado para ${appointment.email}`);
-      console.log(`
-        Assunto: Confirmação de Agendamento - HelpTech
-        
-        Olá ${appointment.name},
-        
-        Confirmamos seu agendamento para ${appointment.service} em ${appointment.date} às ${appointment.time}.
-        
-        Detalhes: ${appointment.details || 'Nenhum detalhe adicional'}
-        
-        Obrigado por escolher a HelpTech!
-      `);
-      
-      // Em uma implementação real, você chamaria uma API de email aqui
-      return true;
-    } catch (error) {
-      console.error('Erro ao enviar email de confirmação:', error);
-      return false;
-    }
-  };
-
   // Function to forward to real attendant
   const forwardToRealAttendant = async (conversation: string, contactInfo: {
     name: string;
     email: string;
   }) => {
     try {
-      // Simulação do envio de email para atendente
-      console.log(`Email para atendente sobre ${contactInfo.name}`);
-      console.log(`
-        Assunto: Solicitação de Atendimento - ${contactInfo.name}
-        
-        Novo pedido de atendimento:
-        
-        Nome: ${contactInfo.name}
-        Email: ${contactInfo.email}
-        
-        Histórico de conversa:
-        ${conversation}
-      `);
-      
+      // Implementação simplificada para simulação
       toast({
         title: "Solicitação enviada",
         description: "Sua solicitação foi encaminhada para um atendente real. Você receberá contato em breve.",
@@ -284,11 +226,6 @@ export const useChatLogic = () => {
   };
 
   const handleUserMessage = async (text: string) => {
-    // Prevent duplicated messages
-    if (chatState.messages.some(msg => msg.type === 'user' && msg.text === text)) {
-      return;
-    }
-    
     const userMessage = createChatMessage(text, 'user');
     
     setChatState(prev => ({
@@ -370,15 +307,15 @@ export const useChatLogic = () => {
 - Data: ${appointment.date}
 - Horário: ${appointment.time}
 
-Um email de confirmação foi enviado para ${appointment.email}. Um de nossos técnicos entrará em contato para confirmar o agendamento. Posso ajudar com mais alguma coisa?`;
+Um de nossos técnicos entrará em contato para confirmar o agendamento. Posso ajudar com mais alguma coisa?`;
           } else {
             responseText = "Desculpe, ocorreu um erro ao registrar seu agendamento. Por favor, tente novamente mais tarde ou entre em contato por telefone.";
           }
         }
       }
-      // Check if it's a diagnostic request
+      // Check if it's a diagnostic request (HelpTech Edu)
       else if (isDiagnosticRequest(text.toLowerCase())) {
-        // Resposta simulada para diagnóstico
+        // Resposta simplificada para diagnóstico
         responseText = `Entendi que você está tendo um problema técnico. Vamos tentar diagnosticar:
 
 1. Por favor, descreva com mais detalhes o que acontece quando você tenta utilizar seu dispositivo.
@@ -388,22 +325,8 @@ Um email de confirmação foi enviado para ${appointment.email}. Um de nossos t�
 Com essas informações poderei ajudar melhor ou encaminhar para um de nossos técnicos.`;
       }
       else {
-        // Use OpenAI API (simulated) for other queries
-        try {
-          responseText = await sendMessageToOpenAI([
-            { role: "system", content: 
-              `Você é o assistente virtual da HelpTech, uma empresa de suporte técnico para computadores e dispositivos móveis.
-               ${user ? `O usuário atual é ${profile?.full_name || user.email}.` : ''}
-               Responda de forma amigável e profissional. Forneça informações sobre serviços de formatação, remoção de vírus, 
-               configuração de redes e reparo de hardware.` 
-            },
-            { role: "user", content: text }
-          ]);
-        } catch (error) {
-          console.error('Erro ao processar com IA:', error);
-          
-          // Fallback response if AI fails
-          responseText = `Obrigado por entrar em contato com a HelpTech! Como posso ajudar você hoje? Oferecemos:
+        // Default response for other queries
+        responseText = `Obrigado por entrar em contato com a HelpTech! Como posso ajudar você hoje? Oferecemos:
 
 - Formatação de Computadores
 - Remoção de Vírus
@@ -412,14 +335,13 @@ Com essas informações poderei ajudar melhor ou encaminhar para um de nossos t�
 
 Se preferir, posso agendar um atendimento com um de nossos técnicos especializados.`;
 
-          // Personalize if user is authenticated
-          if (user && profile?.full_name) {
-            responseText = `Olá ${profile.full_name}! ${responseText}`;
-          }
+        // Personalize if user is authenticated
+        if (user && profile?.full_name) {
+          responseText = `Olá ${profile.full_name}! ${responseText}`;
         }
       }
 
-      const typingDelay = Math.min(2000, Math.max(700, responseText.length * 10));
+      const typingDelay = Math.min(1000, Math.max(700, responseText.length * 10));
       
       setTimeout(() => {
         const botMessage = createChatMessage(responseText, 'bot');
@@ -454,26 +376,16 @@ Se preferir, posso agendar um atendimento com um de nossos técnicos especializa
     if (selectedService) {
       const userMessage = `Gostaria de saber sobre o serviço de ${selectedService.name}`;
       
-      // Check if this message already exists to prevent duplication
-      if (chatState.messages.some(msg => msg.type === 'user' && msg.text === userMessage)) {
-        return;
-      }
-      
-      // Add user message
-      const userMsg = createChatMessage(userMessage, 'user');
-      
       setChatState(prev => ({
         ...prev,
-        messages: [...prev.messages, userMsg],
-        isTyping: true
+        messages: [...prev.messages, createChatMessage(userMessage, 'user')]
       }));
       
-      // Log user message if authenticated
-      if (user) {
-        logChatMessage(userMessage, 'user');
-      }
+      // Ajuste para evitar duplicação: não vamos chamar handleUserMessage aqui
+      // Em vez disso, usamos a lógica simplificada abaixo
+      setChatState(prev => ({ ...prev, isTyping: true }));
       
-      // Simulate bot response
+      // Simulando resposta do bot para este serviço específico
       setTimeout(() => {
         const responseText = `Nosso serviço de ${selectedService.name} inclui: 
 ${selectedService.description}
