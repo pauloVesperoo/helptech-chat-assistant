@@ -1,20 +1,28 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Navbar from '@/components/Navbar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ChatInterface from '@/components/ChatInterface';
 
 const Dashboard = () => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [activeTab, setActiveTab] = useState('chat');
+  
+  // Debug to check values
+  useEffect(() => {
+    console.log("Dashboard - Profile:", profile);
+    console.log("Dashboard - User:", user);
+  }, [profile, user]);
+
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuário';
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Navbar />
       
       <div className="container mx-auto px-4 py-8 flex-1">
-        <h1 className="text-3xl font-bold mb-2">Olá, {profile?.full_name || 'Usuário'}</h1>
+        <h1 className="text-3xl font-bold mb-2">Olá, {displayName}</h1>
         <p className="text-gray-600 mb-8">Bem-vindo ao seu painel de controle</p>
         
         <div className="bg-white rounded-lg shadow-md p-6">

@@ -31,13 +31,6 @@ interface ServicesContent {
   services: Service[];
 }
 
-interface Testimonial {
-  name: string;
-  role: string;
-  content: string;
-  avatar?: string;
-}
-
 const Home = () => {
   const [heroContent, setHeroContent] = useState<HeroContent>({
     title: 'HelpTech - Suporte Técnico Especializado',
@@ -67,24 +60,6 @@ const Home = () => {
       }
     ]
   });
-
-  const [testimonials] = useState<Testimonial[]>([
-    {
-      name: 'Carlos Silva',
-      role: 'Empresário',
-      content: 'O assistente virtual da HelpTech resolveu meu problema de rede em minutos. Impressionante!',
-    },
-    {
-      name: 'Ana Oliveira',
-      role: 'Designer',
-      content: 'Agendar a manutenção do meu notebook foi super fácil com o chatbot. Recomendo!',
-    },
-    {
-      name: 'Roberto Martins',
-      role: 'Professor',
-      content: 'Meu computador travava constantemente. Com a ajuda da HelpTech, está funcionando perfeitamente.'
-    }
-  ]);
 
   useEffect(() => {
     const fetchSiteSettings = async () => {
@@ -318,38 +293,6 @@ const Home = () => {
                 <ArrowRight size={16} />
               </Button>
             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 md:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">O Que Nossos Clientes Dizem</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-0 shadow-md">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <Avatar>
-                      {testimonial.avatar ? (
-                        <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                      ) : (
-                        <AvatarFallback className="bg-blue-100 text-blue-700">
-                          {testimonial.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold">{testimonial.name}</p>
-                      <p className="text-sm text-gray-500">{testimonial.role}</p>
-                    </div>
-                  </div>
-                  <p className="text-gray-700 italic">"{testimonial.content}"</p>
-                </CardContent>
-              </Card>
-            ))}
           </div>
         </div>
       </section>
