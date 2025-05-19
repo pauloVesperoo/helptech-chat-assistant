@@ -15,19 +15,18 @@ const ChatInterface: React.FC = () => {
     handleUserMessage,
     handleServiceButtonClick,
     handleSaveApiKey,
-    toggleOpenAI,
     clearChatHistory
   } = useChatLogic();
 
   return (
-    <div className="flex flex-col h-full border rounded-lg shadow-lg overflow-hidden bg-white">
+    <div className="flex flex-col h-full border rounded-lg shadow-lg overflow-hidden bg-white w-full">
       <ChatHeader />
       
       <ChatControls 
         apiKey={apiKey}
         useOpenAI={useOpenAI}
         onSaveApiKey={handleSaveApiKey}
-        onToggleOpenAI={toggleOpenAI}
+        onToggleOpenAI={() => {}} // Empty function since we always use OpenAI now
       />
       
       <MessageList 

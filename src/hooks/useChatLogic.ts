@@ -14,6 +14,7 @@ export const useChatLogic = () => {
     isTyping: false
   });
   
+  // Always use OpenAI by default
   const [useOpenAI, setUseOpenAI] = useState<boolean>(true);
   const [apiKey, setApiKey] = useState<string>(() => {
     return localStorage.getItem('openai_api_key') || '';
