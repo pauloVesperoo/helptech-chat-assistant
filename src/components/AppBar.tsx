@@ -1,15 +1,35 @@
 
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, PhoneCall } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, PhoneCall, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const AppBar = ({ onChatClick }: { onChatClick?: () => void }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
   
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/login');
   };
 
   return (
@@ -43,6 +63,46 @@ const AppBar = ({ onChatClick }: { onChatClick?: () => void }) => {
               <PhoneCall size={18} className="text-blue-600" />
               <span>(11) 5555-1234</span>
             </div>
+            
+            {!user ? (
+              <Link to="/login">
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <User size={16} />
+                  Entrar
+                </Button>
+              </Link>
+            ) : (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>{getInitials(profile?.full_name || '')}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      {profile?.full_name && (
+                        <p className="font-medium">{profile.full_name}</p>
+                      )}
+                      <p className="text-sm text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sair</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+            
             {onChatClick && (
               <Button 
                 onClick={onChatClick}
@@ -104,6 +164,49 @@ const AppBar = ({ onChatClick }: { onChatClick?: () => void }) => {
               <PhoneCall size={18} className="text-blue-600" />
               <span>(11) 5555-1234</span>
             </div>
+            
+            {!user ? (
+              <Link 
+                to="/login"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                  <User size={16} />
+                  Entrar
+                </Button>
+              </Link>
+            ) : (
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center gap-2 py-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>{getInitials(profile?.full_name || '')}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{profile?.full_name || 'Usuário'}</p>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start" 
+                  onClick={() => {
+                    navigate('/dashboard');
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Dashboard
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start text-red-600" 
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sair
+                </Button>
+              </div>
+            )}
+            
             {onChatClick && (
               <Button 
                 onClick={() => {

@@ -18,7 +18,7 @@ const ChatHeader: React.FC = () => {
       {profile && (
         <div className="text-sm">
           <span className="opacity-80">Olá, </span>
-          <span className="font-medium">{profile.full_name || 'Usuário'}</span>
+          <span className="font-medium">{profile?.full_name || 'Usuário'}</span>
         </div>
       )}
     </div>
