@@ -12,8 +12,8 @@ const ChatHeader: React.FC = () => {
     console.log("ChatHeader - User:", user);
   }, [profile, user]);
   
-  // Get the user's name from profile.full_name
-  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuário';
+  // Get the user's first name from profile.full_name
+  const displayName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Usuário';
   
   return (
     <div className="bg-helptech flex items-center justify-between p-4 rounded-t-lg text-white">

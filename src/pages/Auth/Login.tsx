@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -14,7 +15,8 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  const { signIn } = useAuth();
+  const { signIn, profile } = useAuth();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,9 +24,24 @@ const Login = () => {
     
     try {
       await signIn(email, password);
-      navigate('/dashboard');
-    } catch (error) {
+      
+      // Redirecionar baseado no papel do usuário após login bem-sucedido
+      // O redirecionamento acontecerá após a atualização do perfil no AuthContext
+      setTimeout(() => {
+        if (profile?.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
+      }, 500);
+      
+    } catch (error: any) {
       console.error('Login error:', error);
+      toast({
+        variant: "destructive",
+        title: "Erro ao fazer login",
+        description: error.message || "Verifique suas credenciais e tente novamente."
+      });
     } finally {
       setIsLoading(false);
     }
