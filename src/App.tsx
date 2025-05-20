@@ -11,7 +11,9 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Home from "./pages/Home/Home";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
+import ResetPassword from "./pages/Auth/ResetPassword";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import Appointments from "./pages/Appointments/Appointments";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
@@ -28,11 +30,20 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route 
               path="/dashboard" 
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/appointments" 
+              element={
+                <ProtectedRoute>
+                  <Appointments />
                 </ProtectedRoute>
               } 
             />

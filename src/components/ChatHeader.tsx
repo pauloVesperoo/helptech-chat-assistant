@@ -1,16 +1,13 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Bot } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 const ChatHeader: React.FC = () => {
   const { profile, user } = useAuth();
   
-  // Debug to check values
-  useEffect(() => {
-    console.log("ChatHeader - Profile:", profile);
-    console.log("ChatHeader - User:", user);
-  }, [profile, user]);
+  // Obter o primeiro nome
+  const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Usuário';
   
   return (
     <div className="bg-helptech flex items-center justify-between p-4 rounded-t-lg text-white">
@@ -24,7 +21,7 @@ const ChatHeader: React.FC = () => {
       {user && (
         <div className="text-sm">
           <span className="opacity-80">Olá, </span>
-          <span className="font-medium">{profile?.full_name || user.email?.split('@')[0] || 'Usuário'}</span>
+          <span className="font-medium">{firstName}</span>
         </div>
       )}
     </div>
