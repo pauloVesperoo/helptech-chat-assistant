@@ -12,6 +12,9 @@ const ChatHeader: React.FC = () => {
     console.log("ChatHeader - User:", user);
   }, [profile, user]);
   
+  // Get the user's name from profile.full_name
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuário';
+  
   return (
     <div className="bg-helptech flex items-center justify-between p-4 rounded-t-lg text-white">
       <div className="flex items-center gap-2">
@@ -24,7 +27,7 @@ const ChatHeader: React.FC = () => {
       {user && (
         <div className="text-sm">
           <span className="opacity-80">Olá, </span>
-          <span className="font-medium">{profile?.full_name || user.email?.split('@')[0] || 'Usuário'}</span>
+          <span className="font-medium">{displayName}</span>
         </div>
       )}
     </div>
