@@ -1,104 +1,13 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 import Navbar from '@/components/Navbar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
-import { useNavigate } from 'react-router-dom';
-
-interface DashboardStats {
-  userCount: number;
-  appointmentsCount: number;
-  pendingCount: number;
-}
 
 const AdminDashboard = () => {
-  const { profile, user } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
+  const { profile } = useAuth();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [stats, setStats] = useState<DashboardStats>({
-    userCount: 0,
-    appointmentsCount: 0,
-    pendingCount: 0
-  });
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Verificar se o usuário é admin
-  useEffect(() => {
-    if (profile && profile.role !== 'admin') {
-      toast({
-        variant: "destructive",
-        title: "Acesso negado",
-        description: "Você não tem permissão para acessar esta área"
-      });
-      navigate('/dashboard');
-    }
-
-    console.log("Admin Dashboard - Profile:", profile);
-    console.log("Admin Dashboard - User:", user);
-  }, [profile, user, navigate, toast]);
-
-  // Carregar estatísticas
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        // Contagem de usuários
-        const { count: userCount, error: userError } = await supabase
-          .from('profiles')
-          .select('*', { count: 'exact', head: true });
-
-        if (userError) throw userError;
-
-        // Contagem de agendamentos
-        const { count: appointmentsCount, error: appointmentsError } = await supabase
-          .from('appointments')
-          .select('*', { count: 'exact', head: true });
-
-        if (appointmentsError) throw appointmentsError;
-
-        // Contagem de agendamentos pendentes
-        const { count: pendingCount, error: pendingError } = await supabase
-          .from('appointments')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'pending');
-
-        if (pendingError) throw pendingError;
-
-        setStats({
-          userCount: userCount || 0,
-          appointmentsCount: appointmentsCount || 0,
-          pendingCount: pendingCount || 0
-        });
-      } catch (error) {
-        console.error('Erro ao carregar estatísticas:', error);
-        toast({
-          variant: "destructive",
-          title: "Erro ao carregar dados",
-          description: "Não foi possível carregar as estatísticas do sistema"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (profile?.role === 'admin') {
-      fetchStats();
-    }
-  }, [profile, toast]);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col bg-gray-50">
-        <Navbar />
-        <div className="container mx-auto px-4 py-8 flex-1 flex items-center justify-center">
-          <p>Carregando informações do painel administrativo...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -126,7 +35,7 @@ const AdminDashboard = () => {
                     <CardDescription>Total de usuários no sistema</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-3xl font-bold">{stats.userCount}</p>
+                    <p className="text-3xl font-bold">0</p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -135,7 +44,7 @@ const AdminDashboard = () => {
                     <CardDescription>Total de agendamentos</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-3xl font-bold">{stats.appointmentsCount}</p>
+                    <p className="text-3xl font-bold">0</p>
                   </CardContent>
                 </Card>
                 <Card>
@@ -144,7 +53,7 @@ const AdminDashboard = () => {
                     <CardDescription>Agendamentos pendentes</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-3xl font-bold">{stats.pendingCount}</p>
+                    <p className="text-3xl font-bold">0</p>
                   </CardContent>
                 </Card>
               </div>

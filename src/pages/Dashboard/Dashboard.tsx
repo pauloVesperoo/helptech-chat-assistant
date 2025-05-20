@@ -15,8 +15,7 @@ const Dashboard = () => {
     console.log("Dashboard - User:", user);
   }, [profile, user]);
 
-  // Use full_name from profile if available, otherwise use first part of email
-  const displayName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Usuário';
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'Usuário';
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
