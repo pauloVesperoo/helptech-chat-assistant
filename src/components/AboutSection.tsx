@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CheckCircle, Users, Award, Clock } from 'lucide-react';
 
@@ -66,33 +65,6 @@ const AboutSection = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20">
-          <div className="bg-blue-50 rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
-            <div className="text-blue-600 flex justify-center mb-4">
-              <Users size={40} />
-            </div>
-            <h3 className="text-4xl font-bold text-blue-700">2500+</h3>
-            <p className="text-gray-700 mt-2">Clientes Satisfeitos</p>
-          </div>
-          
-          <div className="bg-blue-50 rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
-            <div className="text-blue-600 flex justify-center mb-4">
-              <Award size={40} />
-            </div>
-            <h3 className="text-4xl font-bold text-blue-700">98%</h3>
-            <p className="text-gray-700 mt-2">Taxa de Resolução</p>
-          </div>
-          
-          <div className="bg-blue-50 rounded-xl p-8 text-center hover:shadow-lg transition-shadow">
-            <div className="text-blue-600 flex justify-center mb-4">
-              <Clock size={40} />
-            </div>
-            <h3 className="text-4xl font-bold text-blue-700">1h</h3>
-            <p className="text-gray-700 mt-2">Tempo Médio de Resposta</p>
           </div>
         </div>
       </div>
