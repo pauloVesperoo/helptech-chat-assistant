@@ -36,7 +36,7 @@ const Navbar = () => {
             <span className="text-xl font-bold text-blue-600">HelpTech</span>
           </Link>
           
-          {/* Navigation */}
+          {/* Navigation
           <nav className="hidden md:flex items-center space-x-6">
             <Link to="/dashboard" className="text-gray-700 hover:text-blue-600 font-medium">
               Assistente Virtual
@@ -49,7 +49,7 @@ const Navbar = () => {
                 Painel Admin
               </Link>
             )}
-          </nav>
+          </nav> */}
           
           {/* User Menu */}
           {user ? (

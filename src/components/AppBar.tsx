@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, PhoneCall, User, LogOut } from 'lucide-react';
+import { Menu, X, PhoneCall, User, LogOut, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,30 +37,16 @@ const AppBar = ({ onChatClick }: { onChatClick?: () => void }) => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center cursor-pointer">
+            <Bot className="mr-2 text-blue-600" size={28} />
             <span className="text-xl font-bold text-blue-600">HelpTech</span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            <Link to="/services" className="text-gray-700 hover:text-blue-600 font-medium">
-              Soluções
-            </Link>
-            <Link to="/support" className="text-gray-700 hover:text-blue-600 font-medium">
-              Suporte
-            </Link>
-            <Link to="/about" className="text-gray-700 hover:text-blue-600 font-medium">
-              Sobre Nós
-            </Link>
-            <Link to="/blog" className="text-gray-700 hover:text-blue-600 font-medium">
-              Blog
-            </Link>
-          </nav>
 
           {/* Contact and Chat Button */}
           <div className="hidden md:flex items-center space-x-4">
             <div className="flex items-center gap-2 text-gray-700">
               <PhoneCall size={18} className="text-blue-600" />
-              <span>(11) 5555-1234</span>
+              <span>(71) 99932-3006</span>
             </div>
             
             {!user ? (
@@ -103,14 +88,7 @@ const AppBar = ({ onChatClick }: { onChatClick?: () => void }) => {
               </DropdownMenu>
             )}
             
-            {onChatClick && (
-              <Button 
-                onClick={onChatClick}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                Iniciar Chat
-              </Button>
-            )}
+
           </div>
 
           {/* Mobile Menu Button */}
@@ -125,41 +103,9 @@ const AppBar = ({ onChatClick }: { onChatClick?: () => void }) => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <div className={cn(
-        "md:hidden bg-white shadow-md transition-all duration-300 overflow-hidden",
-        isMenuOpen ? "max-h-screen py-4" : "max-h-0"
-      )}>
-        <div className="container mx-auto px-4">
-          <nav className="flex flex-col space-y-4">
-            <Link 
-              to="/services" 
-              className="text-gray-700 hover:text-blue-600 font-medium py-2 text-left"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Soluções
-            </Link>
-            <Link 
-              to="/support" 
-              className="text-gray-700 hover:text-blue-600 font-medium py-2 text-left"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Suporte
-            </Link>
-            <Link 
-              to="/about" 
-              className="text-gray-700 hover:text-blue-600 font-medium py-2 text-left"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Sobre Nós
-            </Link>
-            <Link 
-              to="/blog" 
-              className="text-gray-700 hover:text-blue-600 font-medium py-2 text-left"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Blog
-            </Link>
+      <div className="md:hidden">
+        {isMenuOpen && (
+          <nav className="bg-white shadow-md absolute top-16 left-0 right-0 z-40 p-4 space-y-4">
             <div className="flex items-center gap-2 text-gray-700 py-2">
               <PhoneCall size={18} className="text-blue-600" />
               <span>(11) 5555-1234</span>
@@ -219,7 +165,7 @@ const AppBar = ({ onChatClick }: { onChatClick?: () => void }) => {
               </Button>
             )}
           </nav>
-        </div>
+        )}
       </div>
     </header>
   );
