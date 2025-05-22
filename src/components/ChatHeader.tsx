@@ -1,10 +1,13 @@
-
 import React from 'react';
 import { Bot } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+// Update the import path below to the correct relative path if needed
+import { Button } from './ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const ChatHeader: React.FC = () => {
   const { profile, user } = useAuth();
+  const navigate = useNavigate();
   
   // Obter o primeiro nome
   const firstName = profile?.full_name?.split(' ')[0] || user?.email?.split('@')[0] || 'Usuário';
@@ -19,9 +22,13 @@ const ChatHeader: React.FC = () => {
         </div>
       </div>
       {user && (
-        <div className="text-sm">
-          <span className="opacity-80">Olá, </span>
-          <span className="font-medium">{firstName}</span>
+        <div className="flex items-center gap-4">
+          <Button
+            className="bg-white text-blue-700 border border-blue-600 hover:bg-blue-50 px-4 py-2 text-sm rounded-full shadow"
+            onClick={() => navigate('/appointments')}
+          >
+            Meus Agendamentos
+          </Button>
         </div>
       )}
     </div>

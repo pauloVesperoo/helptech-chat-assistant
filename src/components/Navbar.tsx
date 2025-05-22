@@ -74,12 +74,6 @@ const Navbar = () => {
                     </div>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
-                    Assistente Virtual
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/appointments')}>
-                    Meus Agendamentos
-                  </DropdownMenuItem>
                   {profile?.role === 'admin' && (
                     <DropdownMenuItem onClick={() => navigate('/admin')}>
                       Painel Admin
