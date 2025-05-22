@@ -116,8 +116,19 @@ const Dashboard = () => {
             </TabsContent>
 
             <TabsContent value="locations" className="h-[600px] overflow-auto">
-              <div className="max-w-xl mx-auto pt-8">
-                <div className="bg-indigo-50 rounded-lg shadow p-6">
+              <div className="max-w-6xl mx-auto pt-8 h-full">
+                <div className="bg-indigo-600 flex items-center justify-between p-4 rounded-t-lg text-white">
+                  <div className="flex items-center gap-2">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" className="text-white">
+                      <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z" />
+                    </svg>
+                    <div>
+                      <h1 className="font-bold text-lg">HelpTech</h1>
+                      <p className="text-xs opacity-80">Localizador de Assistências</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-indigo-50 rounded-b-lg shadow p-6">
                   <h2 className="text-2xl font-bold text-indigo-700 mb-2 text-center">
                     Encontre Assistências Técnicas Próximas
                   </h2>
